@@ -11,8 +11,8 @@ export class UsersService {
 
     async create(createUserDto: CreateUserDto): Promise<User> {
         try {
-            const createdUser = new this.userModel(createUserDto);
-            return createdUser.save();
+            const createdUser = await this.userModel.create(createUserDto);
+            return createdUser;
         } catch (error) {
             throw new Error('Unable to create user');
         }
@@ -20,7 +20,7 @@ export class UsersService {
 
     async findAll(): Promise<User[]> {
         try {
-            return this.userModel.find().exec();
+            return this.userModel.find();
         } catch (error) {
             throw new NotFoundException('Users not found');
         }
@@ -28,7 +28,7 @@ export class UsersService {
 
     async findOne(id: string): Promise<User> {
         try {
-            return this.userModel.findOne({ _id: id }).exec();
+            return this.userModel.findOne({ _id: id });
         } catch (error) {
             throw new NotFoundException('User not found');
         }
@@ -36,7 +36,7 @@ export class UsersService {
 
     async delete(id: string): Promise<User> {
         try {
-            const deletedUser = await this.userModel.findOneAndDelete({ _id: id }).exec();
+            const deletedUser = await this.userModel.findOneAndDelete({ _id: id });
             if (!deletedUser) {
                 throw new NotFoundException('User not found');
             }
@@ -48,7 +48,7 @@ export class UsersService {
 
     async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
         try {
-            const user = await this.userModel.findOneAndUpdate({ _id: id }, updateUserDto, { new: true }).exec();
+            const user = await this.userModel.findOneAndUpdate({ _id: id }, updateUserDto, { new: true });
             if (!user) {
                 throw new NotFoundException('User not found');
             }
