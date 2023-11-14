@@ -16,18 +16,18 @@ async function bootstrap() {
   });
 
   const app = await NestFactory.create(AppModule);
+  const globalPrefix = 'api';
 
   const config = new DocumentBuilder()
     .setTitle('Studdit')
     .setDescription('The Studdit API description. Built for the NoSQL course, provided by Avans Hogeschool.')
     .setVersion('1.0')
-    .addTag('studdit')
+    .addServer(globalPrefix)
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, document);
   
-  const globalPrefix = 'api';
+  SwaggerModule.setup(globalPrefix, app, document);
   app.setGlobalPrefix(globalPrefix);
   
   const port = process.env.PORT || 3003;
