@@ -12,6 +12,7 @@ export class UsersService {
     async create(createUserDto: CreateUserDto): Promise<User> {
         try {
             const createdUser = await this.userModel.create(createUserDto);
+            
             return createdUser;
         } catch (error) {
             throw new Error('Unable to create user');
@@ -49,9 +50,11 @@ export class UsersService {
     async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
         try {
             const user = await this.userModel.findOneAndUpdate({ _id: id }, updateUserDto, { new: true });
+
             if (!user) {
                 throw new NotFoundException('User not found');
             }
+
             return user;
         } catch (error) {
             throw new Error('Unable to update user');

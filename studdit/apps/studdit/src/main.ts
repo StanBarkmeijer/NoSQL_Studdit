@@ -5,8 +5,8 @@
 
 import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-
 import { AppModule } from './app/app.module';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 
 import * as dotenv from 'dotenv';
 
@@ -16,10 +16,23 @@ async function bootstrap() {
   });
 
   const app = await NestFactory.create(AppModule);
+
+  const config = new DocumentBuilder()
+    .setTitle('Studdit')
+    .setDescription('The Studdit API description. Built for the NoSQL course, provided by Avans Hogeschool.')
+    .setVersion('1.0')
+    .addTag('studdit')
+    .build();
+
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api', app, document);
+  
   const globalPrefix = 'api';
   app.setGlobalPrefix(globalPrefix);
+  
   const port = process.env.PORT || 3003;
   await app.listen(port);
+  
   Logger.log(`🚀 Application is running on: http://localhost:${port}/${globalPrefix}`);
 }
 
