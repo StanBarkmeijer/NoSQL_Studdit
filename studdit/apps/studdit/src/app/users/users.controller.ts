@@ -7,6 +7,7 @@ import { DeleteUserDto } from './dto/delete-user.dto';
 
 import { User } from './schemas/user.schema';
 import { ApiCreatedResponse, ApiNotFoundResponse, ApiOkResponse, ApiParam, ApiTags, ApiUnauthorizedResponse, ApiUnprocessableEntityResponse } from '@nestjs/swagger';
+import { Neo4jService } from '../neo4j/neo4j.service';
 
 @ApiTags('users')
 @Controller('users')
