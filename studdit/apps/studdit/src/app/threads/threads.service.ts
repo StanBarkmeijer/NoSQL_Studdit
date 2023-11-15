@@ -27,4 +27,19 @@ export class ThreadsService {
             throw new Error('Unable to create thread');
         }
     }
+
+    async update(id: string, updateThreadDto: CreateThreadDto): Promise<Thread> {
+        try {
+            const thread = await this.threadModel.findOne({ _id: id });
+
+            if (!thread) {
+                throw new NotFoundException('Thread not found');
+            }
+
+            const updatedThread = await this.threadModel.findOneAndUpdate({ _id: id }, updateThreadDto, { new: true });
+            return updatedThread;
+        } catch (error) {
+            throw new Error('Unable to update thread');
+        }
+    }
 }

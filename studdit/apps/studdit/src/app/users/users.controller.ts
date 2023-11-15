@@ -1,4 +1,4 @@
-import { Body, Controller, Post, HttpException, HttpStatus, Get, Put, NotFoundException, Delete, ValidationPipe, UnauthorizedException } from '@nestjs/common';
+import { Body, Controller, Post, HttpException, HttpStatus, Get, Put, NotFoundException, Delete, ValidationPipe, UnauthorizedException, Param } from '@nestjs/common';
 import { UsersService } from './users.service';
 
 import { CreateUserDto } from './dto/create-user.dto';
@@ -41,7 +41,7 @@ export class UsersController {
     @ApiParam({ name: 'id', type: String, description: 'The id of the user to retrieve.' })
     @ApiOkResponse({ description: 'The user has been successfully retrieved.'})
     @ApiNotFoundResponse({ description: 'User not found'})
-    async findOne(id: string): Promise<User> {
+    async findOne(@Param('id') id: string): Promise<User> {
         return await this.usersService
             .findOne(id)
             .then(user => user)
@@ -56,7 +56,7 @@ export class UsersController {
     @ApiNotFoundResponse({ description: 'User not found'})
     @ApiUnauthorizedResponse({ description: 'Current password is incorrect'})
     @ApiUnprocessableEntityResponse({ description: 'Unable to update user'})
-    async update(@Body(new ValidationPipe()) updateUserDto: UpdateUserDto, id: string): Promise<User> {
+    async update(@Body(new ValidationPipe()) updateUserDto: UpdateUserDto, @Param('id') id: string): Promise<User> {
         return await this.usersService
             .update(id, updateUserDto)
             .then(user => user)
@@ -78,7 +78,7 @@ export class UsersController {
     @ApiOkResponse({ description: 'The user has been successfully deleted.'})
     @ApiNotFoundResponse({ description: 'User not found'})
     @ApiUnprocessableEntityResponse({ description: 'Unable to delete user'})
-    async remove(@Body(new ValidationPipe()) deleteUserDTO: DeleteUserDto, id: string): Promise<User> {
+    async remove(@Body(new ValidationPipe()) deleteUserDTO: DeleteUserDto, @Param('id') id: string): Promise<User> {
         return await this.usersService
             .delete(id, deleteUserDTO)
             .then(user => user)
