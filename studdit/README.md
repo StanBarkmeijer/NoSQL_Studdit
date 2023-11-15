@@ -61,3 +61,29 @@ Nx comes with local caching already built-in (check your `nx.json`). On CI you m
 - [Join the community](https://nx.dev/community)
 - [Subscribe to the Nx Youtube Channel](https://www.youtube.com/@nxdevtools)
 - [Follow us on Twitter](https://twitter.com/nxdevtools)
+
+## Endpoint table
+
+| Endpoint              | HTTP Method | Description                              | Frequency Estimation |
+|-----------------------|-------------|------------------------------------------|----------------------|
+| /api                  | GET         | Root of the API                          | 2-3                  |
+| /api/users            | POST        | Create a new user                        | 2-3                  |
+| /api/users            | GET         | Get all users                            | 3-4                  |
+| /api/users/:id        | GET         | Get a specific user by ID                | 3-4                  |
+| /api/users/:id        | PUT         | Update a specific user by ID             | 2-3                  |
+| /api/users/:id        | DELETE      | Delete a specific user by ID             | 1-2                  |
+| /api/threads          | POST        | Create a new thread                      | 2-3                  |
+| /api/threads/:id      | PUT         | Update a specific thread by ID           | 1-2                  |
+| /api/threads/:id/upvote | PATCH    | Upvote a specific thread by ID           | 2-3                  |
+| /api/threads/:id/downvote | PATCH  | Downvote a specific thread by ID         | 2-3                  |
+| /api/threads/:id      | DELETE      | Delete a specific thread by ID           | 1-2                  |
+| /api/threads          | GET         | Get all threads                          | 3-4                  |
+| /api/threads/:id      | GET         | Get a specific thread by ID              | 3-4                  |
+| /api/comments         | POST        | Create a new comment                     | 3-4                  |
+| /api/comments/:id     | POST        | Reply to a specific comment by ID        | 2-3                  |
+| /api/comments/:id     | DELETE      | Delete a specific comment by ID          | 2-3                  |
+| /api/comments/:id/upvote | PATCH    | Upvote a specific comment by ID          | 2-3                  |
+| /api/comments/:id/downvote | PATCH  | Downvote a specific comment by ID        | 2-3                  |
+| /api/comments/:id/thread | GET      | Get the thread of a specific comment     | 2-3                  |
+| /api/comments/:id     | GET         | Get a specific comment by ID             | 3-4                  |
+| /api/comments/:id/nested | GET      | Get nested comments of a specific comment| 1-2                  |
