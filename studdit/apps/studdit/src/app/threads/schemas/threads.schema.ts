@@ -18,7 +18,7 @@ export class Thread {
     content: string;
 
     @Prop({ type: [{ type: Types.ObjectId, ref: 'Comment'}], default: [] })
-    comments: Comment[];
+    comments: Types.ObjectId[];
 
     @Prop({ type: [{ type: Types.ObjectId, ref: 'User' }], default: [] })
     upvotes: Types.ObjectId[];

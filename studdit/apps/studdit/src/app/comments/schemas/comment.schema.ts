@@ -5,7 +5,7 @@ export type CommentDocument = HydratedDocument<Comment>;
 
 @Schema({ timestamps: true })
 export class Comment {
-    _id?: string;
+    _id?: Types.ObjectId;
 
     @Prop({ required: true })
     username: string;
@@ -14,7 +14,7 @@ export class Comment {
     content: string;
 
     @Prop({ type: [{ type: Types.ObjectId, ref: 'Comment'}], default: [] })
-    comments: Comment[];
+    comments: Types.ObjectId[];
 
     @Prop({ type: [{ type: Types.ObjectId, ref: 'User' }], default: [] })
     upvotes: Types.ObjectId[];
