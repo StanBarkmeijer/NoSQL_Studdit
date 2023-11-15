@@ -1,18 +1,14 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { HydratedDocument, Document, Types } from "mongoose";
-import { Comment } from "../../comments/schemas/comment.schema";
 
-export type ThreadDocument = HydratedDocument<Thread>;
+export type CommentDocument = HydratedDocument<Comment>;
 
 @Schema({ timestamps: true })
-export class Thread {
+export class Comment {
     _id?: string;
 
     @Prop({ required: true })
     username: string;
-
-    @Prop({ required: true })
-    title: string;
 
     @Prop({ required: true })
     content: string;
@@ -31,4 +27,4 @@ export class Thread {
     }
 }
 
-export const ThreadSchema = SchemaFactory.createForClass(Thread);
+export const CommentSchema = SchemaFactory.createForClass(Comment);
