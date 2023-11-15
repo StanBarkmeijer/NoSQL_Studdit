@@ -5,9 +5,7 @@ export type ThreadDocument = HydratedDocument<Thread>;
 
 @Schema({ timestamps: true })
 export class Thread {
-    _id?: string;
-
-    @Prop({ required: true })
+    @Prop({ required: true, index: true }) // Index for username
     username: string;
 
     @Prop({ required: true })
@@ -16,7 +14,8 @@ export class Thread {
     @Prop({ required: true })
     content: string;
 
-    @Prop({ type: [{ type: Types.ObjectId, ref: 'Comment'}], default: [] })
+    // Consideration: Referencing related data (User and Comment) for scalability
+    @Prop({ type: [{ type: Types.ObjectId, ref: 'Comment' }], default: [] })
     comments: Types.ObjectId[];
 
     @Prop({ type: [{ type: Types.ObjectId, ref: 'User' }], default: [] })
@@ -25,6 +24,14 @@ export class Thread {
     @Prop({ type: [{ type: Types.ObjectId, ref: 'User' }], default: [] })
     downvotes: Types.ObjectId[];
 
+    // Index for timestamps if common queries involve time-based filtering/sorting
+    @Prop({ index: true })
+    createdAt: Date;
+
+    @Prop({ index: true })
+    updatedAt: Date;
+
+    // Calculated field for score
     get score(): number {
         return this.upvotes.length - this.downvotes.length;
     }
