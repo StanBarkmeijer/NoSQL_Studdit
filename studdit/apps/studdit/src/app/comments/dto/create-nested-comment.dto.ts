@@ -17,12 +17,4 @@ export class CreateNestedCommentDto {
     @IsNotEmpty()
     @IsString()
     readonly content: string;
-
-    @ApiProperty({
-        description: "The id of the parent comment",
-        example: "5f9c2b7b1c9d440000b7f1e6"
-    })
-    @IsNotEmpty()
-    @IsString()
-    readonly parentCommentId: string;
 }

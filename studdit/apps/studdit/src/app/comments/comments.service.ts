@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User } from '../users/schemas/user.schema';
@@ -39,7 +39,7 @@ export class CommentsService {
         }
     }
 
-    async createNestedComment(createNestedCommentDto: CreateNestedCommentDto): Promise<Comment> {
+    async createNestedComment(id: string, createNestedCommentDto: CreateNestedCommentDto): Promise<Comment> {
         try {
             const user = await this.userModel.findOne({ username: createNestedCommentDto.username });
 
@@ -47,7 +47,7 @@ export class CommentsService {
                 throw new NotFoundException('User not found');
             }
 
-            const parentComment = await this.commentModel.findOne({ _id: createNestedCommentDto.parentCommentId });
+            const parentComment = await this.commentModel.findOne({ _id: id });
 
             if (!parentComment) {
                 throw new NotFoundException('Parent comment not found');
@@ -75,6 +75,76 @@ export class CommentsService {
             return deletedComment;
         } catch (error) {
             throw new Error('Unable to delete comment');
+        }
+    }
+
+    async upvoteComment(id: string, username: string): Promise<Comment> {
+        try {
+            const comment = await this.commentModel.findOne({ _id: id });
+
+            if (!comment) {
+                throw new NotFoundException('Comment not found');
+            }
+
+            const user: User = await this.userModel.findOne({ username: username });
+
+            if (!user) {
+                throw new NotFoundException('User not found');
+            }
+
+            const hasUpvoted = comment.upvotes.includes(user._id);
+            const hasDownvoted = comment.downvotes.includes(user._id);
+
+            if (hasUpvoted) {
+                throw new BadRequestException('User has already upvoted this comment');
+            }
+
+            if (hasDownvoted) {
+                const idx = comment.downvotes.indexOf(user._id);
+                comment.downvotes.splice(idx, 1);
+            }
+
+            comment.upvotes.push(user._id);
+            await comment.save();
+
+            return comment;
+        } catch (error) {
+            throw new Error('Unable to upvote comment');
+        }
+    }
+
+    async downvoteComment(id: string, username: string): Promise<Comment> {
+        try {
+            const comment = await this.commentModel.findOne({ _id: id });
+
+            if (!comment) {
+                throw new NotFoundException('Comment not found');
+            }
+
+            const user: User = await this.userModel.findOne({ username: username });
+
+            if (!user) {
+                throw new NotFoundException('User not found');
+            }
+
+            const hasUpvoted = comment.upvotes.includes(user._id);
+            const hasDownvoted = comment.downvotes.includes(user._id);
+
+            if (hasDownvoted) {
+                throw new BadRequestException('User has already downvoted this comment');
+            }
+
+            if (hasUpvoted) {
+                const idx = comment.upvotes.indexOf(user._id);
+                comment.upvotes.splice(idx, 1);
+            }
+
+            comment.downvotes.push(user._id);
+            await comment.save();
+
+            return comment;
+        } catch (error) {
+            throw new Error('Unable to downvote comment');
         }
     }
 }
