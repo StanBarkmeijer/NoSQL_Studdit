@@ -112,4 +112,57 @@ export class ThreadsService {
             throw new Error('Unable to downvote thread');
         }
     }
+
+    async delete(id: string): Promise<Thread> {
+        try {
+            const thread = await this.threadModel.findOne({ _id: id });
+
+            if (!thread) {
+                throw new NotFoundException('Thread not found');
+            }
+
+            const deletedThread = await this.threadModel.findOneAndDelete({ _id: id });
+            return deletedThread;
+        } catch (error) {
+            throw new Error('Unable to delete thread');
+        }
+    }
+
+    async findAll(): Promise<Thread[]> {
+        try {
+            return this.threadModel.find();
+        } catch (error) {
+            throw new NotFoundException('Threads not found');
+        }
+    }
+
+    async findAllSortedByUpvotes(): Promise<Thread[]> {
+        try {
+            return this.threadModel.find().sort({ upvotes: -1 });
+        } catch (error) {
+            throw new NotFoundException('Threads not found');
+        }
+    }
+
+    async findAllSortedByScore(): Promise<Thread[]> {
+        try {
+            return this.threadModel.aggregate([
+                { $addFields: { voteDifference: { $subtract: [ { $size: "$upvotes" }, { $size: "$downvotes" } ] } } },
+                { $sort: { voteDifference: -1 } }
+            ]);
+        } catch (error) {
+            throw new NotFoundException('Threads not found');
+        }
+    }
+
+    async findAllSortedByComments(): Promise<Thread[]> {
+        try {
+            return this.threadModel.aggregate([
+                { $addFields: { commentCount: { $size: "$comments" } } },
+                { $sort: { commentCount: -1 } }
+            ]);
+        } catch (error) {
+            throw new NotFoundException('Threads not found');
+        }
+    }
 }

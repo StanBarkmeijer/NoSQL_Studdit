@@ -1,5 +1,5 @@
-import { BadRequestException, Body, Controller, HttpException, HttpStatus, NotFoundException, Param, Patch, Post, Put, ValidationPipe } from '@nestjs/common';
-import { ApiCreatedResponse, ApiNotFoundResponse, ApiOkResponse, ApiParam, ApiTags, ApiUnprocessableEntityResponse } from '@nestjs/swagger';
+import { BadRequestException, Body, Controller, Delete, Get, HttpException, HttpStatus, NotFoundException, Param, Patch, Post, Put, Query, ValidationPipe } from '@nestjs/common';
+import { ApiCreatedResponse, ApiNotFoundResponse, ApiOkResponse, ApiParam, ApiQuery, ApiTags, ApiUnprocessableEntityResponse } from '@nestjs/swagger';
 import { ThreadsService } from './threads.service';
 import { CreateThreadDto } from './dto/create-thread.dto';
 import { Thread } from './schemas/threads.schema';
@@ -89,4 +89,46 @@ export class ThreadsController {
                 throw new HttpException('Unable to downvote thread', HttpStatus.UNPROCESSABLE_ENTITY);
             });
     };
+
+    @Delete(':id')
+    @ApiParam({ name: 'id', type: String, description: 'The id of the thread to delete.' })
+    @ApiOkResponse({ description: 'The thread has been successfully deleted.'})
+    @ApiNotFoundResponse({ description: 'Thread not found'})
+    @ApiUnprocessableEntityResponse({ description: 'Unable to delete thread'})
+    async delete(@Param('id') id: string): Promise<Thread> {
+        return await this.threadsService
+            .delete(id)
+            .then(thread => thread)
+            .catch(error => {
+                if (error instanceof NotFoundException) {
+                    throw new HttpException('Thread not found', HttpStatus.NOT_FOUND);
+                }
+
+                throw new HttpException('Unable to delete thread', HttpStatus.UNPROCESSABLE_ENTITY);
+            });
+    };
+
+    @Get()
+    @ApiQuery({ name: 'sort', type: String, description: 'The sorting method: upvotes, score, comments.', required: false })
+    @ApiOkResponse({ description: 'The threads have been successfully retrieved.'})
+    async findAll(@Query('sort') sort: string): Promise<Thread[]> {
+        const sortMethods = {
+            upvotes: () => this.threadsService.findAllSortedByUpvotes(),
+            score: () => this.threadsService.findAllSortedByScore(),
+            comments: () => this.threadsService.findAllSortedByComments(),
+            undefined: () => this.threadsService.findAll()
+        };
+
+        const sortMethod = sortMethods[sort];
+
+        if (!sortMethod) {
+            throw new BadRequestException('Invalid sorting method');
+        }
+
+        try {
+            return await sortMethod();
+        } catch (error) {
+            throw new HttpException('Unable to retrieve threads', HttpStatus.UNPROCESSABLE_ENTITY);
+        }
+    }
 }
