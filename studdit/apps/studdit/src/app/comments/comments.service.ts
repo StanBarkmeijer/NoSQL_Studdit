@@ -150,7 +150,9 @@ export class CommentsService {
 
     async getCommentsByThreadId(id: string): Promise<Comment[]> {
         try {
-            const thread = await this.threadModel.findOne({ _id: id });
+            const thread = await this.threadModel
+                .findOne({ _id: id })
+                .populate('comments');
 
             if (!thread) {
                 throw new NotFoundException('Thread not found');
@@ -179,7 +181,9 @@ export class CommentsService {
 
     async getNestedComments(id: string): Promise<Comment[]> {
         try {
-            const comment = await this.commentModel.findOne({ _id: id });
+            const comment = await this.commentModel
+                .findOne({ _id: id })
+                .populate('comments')
 
             if (!comment) {
                 throw new NotFoundException('Comment not found');

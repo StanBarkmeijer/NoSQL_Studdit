@@ -14,8 +14,8 @@ export class CommentsController {
     @ApiCreatedResponse({ description: 'The comment has been successfully created.'})
     @ApiUnprocessableEntityResponse({ description: 'Unable to create comment.'})
     @ApiNotFoundResponse({ description: 'User or Thread not found'})
-    async create(@Body(new ValidationPipe()) createCommentDto: CreateCommentDto): Promise<Comment> {
-        return await this.commentsService
+    create(@Body(new ValidationPipe()) createCommentDto: CreateCommentDto): Promise<Comment> {
+        return this.commentsService
             .create(createCommentDto)
             .then(comment => comment)
             .catch(error => {
@@ -32,8 +32,8 @@ export class CommentsController {
     @ApiCreatedResponse({ description: 'The nested comment has been successfully created.'})
     @ApiUnprocessableEntityResponse({ description: 'Unable to create nested comment.'})
     @ApiNotFoundResponse({ description: 'User or Parent comment not found'})
-    async createNestedComment(@Body(new ValidationPipe()) createNestedCommentDto: CreateNestedCommentDto, @Param('id') id: string): Promise<Comment> {
-        return await this.commentsService
+    createNestedComment(@Body(new ValidationPipe()) createNestedCommentDto: CreateNestedCommentDto, @Param('id') id: string): Promise<Comment> {
+        return this.commentsService
             .createNestedComment(id, createNestedCommentDto)
             .then(comment => comment)
             .catch(error => {
@@ -50,8 +50,8 @@ export class CommentsController {
     @ApiOkResponse({ description: 'The comment has been successfully deleted.'})
     @ApiNotFoundResponse({ description: 'Comment not found'})
     @ApiUnprocessableEntityResponse({ description: 'Unable to delete comment'})
-    async delete(@Param('id') id: string): Promise<Comment> {
-        return await this.commentsService
+    delete(@Param('id') id: string): Promise<Comment> {
+        return this.commentsService
             .delete(id)
             .then(comment => comment)
             .catch(error => {
@@ -68,8 +68,8 @@ export class CommentsController {
     @ApiOkResponse({ description: 'The comment has been successfully upvoted.'})
     @ApiNotFoundResponse({ description: 'Comment or User not found'})
     @ApiUnprocessableEntityResponse({ description: 'Unable to upvote comment'})
-    async upvote(@Param('id') id: string, @Body('username') username: string): Promise<Comment> {
-        return await this.commentsService
+    upvote(@Param('id') id: string, @Body('username') username: string): Promise<Comment> {
+        return this.commentsService
             .upvoteComment(id, username)
             .then(comment => comment)
             .catch(error => {
@@ -90,8 +90,8 @@ export class CommentsController {
     @ApiOkResponse({ description: 'The comment has been successfully downvoted.'})
     @ApiNotFoundResponse({ description: 'Comment or User not found'})
     @ApiUnprocessableEntityResponse({ description: 'Unable to downvote comment'})
-    async downvote(@Param('id') id: string, @Body('username') username: string): Promise<Comment> {
-        return await this.commentsService
+    downvote(@Param('id') id: string, @Body('username') username: string): Promise<Comment> {
+        return this.commentsService
             .downvoteComment(id, username)
             .then(comment => comment)
             .catch(error => {
@@ -112,8 +112,8 @@ export class CommentsController {
     @ApiOkResponse({ description: 'The thread has been successfully retrieved.'})
     @ApiNotFoundResponse({ description: 'Thread not found'})
     @ApiUnprocessableEntityResponse({ description: 'Unable to get comments'})
-    async getCommentsByThreadId(@Param('id') id: string): Promise<Comment[]> {
-        return await this.commentsService
+    getCommentsByThreadId(@Param('id') id: string): Promise<Comment[]> {
+        return this.commentsService
             .getCommentsByThreadId(id)
             .then(comments => comments)
             .catch(error => {
@@ -130,8 +130,8 @@ export class CommentsController {
     @ApiOkResponse({ description: 'The comment has been successfully retrieved.'})
     @ApiNotFoundResponse({ description: 'Comment not found'})
     @ApiUnprocessableEntityResponse({ description: 'Unable to get comment'})
-    async getCommentById(@Param('id') id: string): Promise<Comment> {
-        return await this.commentsService
+    getCommentById(@Param('id') id: string): Promise<Comment> {
+        return this.commentsService
             .getCommentById(id)
             .then(comment => comment)
             .catch(error => {
@@ -148,8 +148,8 @@ export class CommentsController {
     @ApiOkResponse({ description: 'The nested comments have been successfully retrieved.'})
     @ApiNotFoundResponse({ description: 'Comment not found'})
     @ApiUnprocessableEntityResponse({ description: 'Unable to get nested comments'})
-    async getNestedComments(@Param('id') id: string): Promise<Comment[]> {
-        return await this.commentsService
+    getNestedComments(@Param('id') id: string): Promise<Comment[]> {
+        return this.commentsService
             .getNestedComments(id)
             .then(comments => comments)
             .catch(error => {

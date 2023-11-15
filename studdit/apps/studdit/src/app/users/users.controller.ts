@@ -16,8 +16,8 @@ export class UsersController {
     @Post()
     @ApiCreatedResponse({ description: 'The user has been successfully created.'})
     @ApiUnprocessableEntityResponse({ description: 'Unable to create user.'})
-    async create(@Body(new ValidationPipe()) createUserDto: CreateUserDto): Promise<User> {
-        return await this.usersService
+    create(@Body(new ValidationPipe()) createUserDto: CreateUserDto): Promise<User> {
+        return this.usersService
             .create(createUserDto)
             .then(user => user)
             .catch(error => {
@@ -28,8 +28,8 @@ export class UsersController {
     @Get()
     @ApiOkResponse({ description: 'The users have been successfully retrieved.'})
     @ApiNotFoundResponse({ description: 'Users not found.'})
-    async findAll(): Promise<User[]> {
-        return await this.usersService
+    findAll(): Promise<User[]> {
+        return this.usersService
             .findAll()
             .then(users => users)
             .catch(error => {
@@ -41,8 +41,8 @@ export class UsersController {
     @ApiParam({ name: 'id', type: String, description: 'The id of the user to retrieve.' })
     @ApiOkResponse({ description: 'The user has been successfully retrieved.'})
     @ApiNotFoundResponse({ description: 'User not found'})
-    async findOne(@Param('id') id: string): Promise<User> {
-        return await this.usersService
+    findOne(@Param('id') id: string): Promise<User> {
+        return this.usersService
             .findOne(id)
             .then(user => user)
             .catch(error => {
@@ -56,8 +56,8 @@ export class UsersController {
     @ApiNotFoundResponse({ description: 'User not found'})
     @ApiUnauthorizedResponse({ description: 'Current password is incorrect'})
     @ApiUnprocessableEntityResponse({ description: 'Unable to update user'})
-    async update(@Body(new ValidationPipe()) updateUserDto: UpdateUserDto, @Param('id') id: string): Promise<User> {
-        return await this.usersService
+    update(@Body(new ValidationPipe()) updateUserDto: UpdateUserDto, @Param('id') id: string): Promise<User> {
+        return this.usersService
             .update(id, updateUserDto)
             .then(user => user)
             .catch(error => {
@@ -78,8 +78,8 @@ export class UsersController {
     @ApiOkResponse({ description: 'The user has been successfully deleted.'})
     @ApiNotFoundResponse({ description: 'User not found'})
     @ApiUnprocessableEntityResponse({ description: 'Unable to delete user'})
-    async remove(@Body(new ValidationPipe()) deleteUserDTO: DeleteUserDto, @Param('id') id: string): Promise<User> {
-        return await this.usersService
+    remove(@Body(new ValidationPipe()) deleteUserDTO: DeleteUserDto, @Param('id') id: string): Promise<User> {
+        return this.usersService
             .delete(id, deleteUserDTO)
             .then(user => user)
             .catch(error => {

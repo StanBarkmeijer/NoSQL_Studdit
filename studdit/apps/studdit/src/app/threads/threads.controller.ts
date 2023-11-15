@@ -13,8 +13,8 @@ export class ThreadsController {
     @ApiCreatedResponse({ description: 'The thread has been successfully created.'})
     @ApiUnprocessableEntityResponse({ description: 'Unable to create thread.'})
     @ApiNotFoundResponse({ description: 'User not found'})
-    async create(@Body(new ValidationPipe()) createThreadDto: CreateThreadDto): Promise<Thread> {
-        return await this.threadsService
+    create(@Body(new ValidationPipe()) createThreadDto: CreateThreadDto): Promise<Thread> {
+        return this.threadsService
             .create(createThreadDto)
             .then(thread => thread)
             .catch(error => {
@@ -31,8 +31,8 @@ export class ThreadsController {
     @ApiOkResponse({ description: 'The thread has been successfully updated.'})
     @ApiNotFoundResponse({ description: 'Thread not found'})
     @ApiUnprocessableEntityResponse({ description: 'Unable to update thread'})
-    async update(@Body(new ValidationPipe()) createThreadDto: CreateThreadDto, @Param('id') id: string): Promise<Thread> {
-        return await this.threadsService
+    update(@Body(new ValidationPipe()) createThreadDto: CreateThreadDto, @Param('id') id: string): Promise<Thread> {
+        return this.threadsService
             .update(id, createThreadDto)
             .then(thread => thread)
             .catch(error => {
@@ -50,8 +50,8 @@ export class ThreadsController {
     @ApiNotFoundResponse({ description: 'Thread not found'})
     @ApiNotFoundResponse({ description: 'User not found'})
     @ApiUnprocessableEntityResponse({ description: 'Unable to upvote thread'})
-    async upvote(@Param('id') id: string, @Body('username') username: string): Promise<Thread> {
-        return await this.threadsService
+    upvote(@Param('id') id: string, @Body('username') username: string): Promise<Thread> {
+        return this.threadsService
             .upvote(id, username)
             .then(thread => thread)
             .catch(error => {
@@ -73,8 +73,8 @@ export class ThreadsController {
     @ApiNotFoundResponse({ description: 'Thread not found'})
     @ApiNotFoundResponse({ description: 'User not found'})
     @ApiUnprocessableEntityResponse({ description: 'Unable to downvote thread'})
-    async downvote(@Param('id') id: string, @Body('username') username: string): Promise<Thread> {
-        return await this.threadsService
+    downvote(@Param('id') id: string, @Body('username') username: string): Promise<Thread> {
+        return this.threadsService
             .downvote(id, username)
             .then(thread => thread)
             .catch(error => {
@@ -95,8 +95,8 @@ export class ThreadsController {
     @ApiOkResponse({ description: 'The thread has been successfully deleted.'})
     @ApiNotFoundResponse({ description: 'Thread not found'})
     @ApiUnprocessableEntityResponse({ description: 'Unable to delete thread'})
-    async delete(@Param('id') id: string): Promise<Thread> {
-        return await this.threadsService
+    delete(@Param('id') id: string): Promise<Thread> {
+        return this.threadsService
             .delete(id)
             .then(thread => thread)
             .catch(error => {
@@ -111,7 +111,7 @@ export class ThreadsController {
     @Get()
     @ApiQuery({ name: 'sort', type: String, description: 'The sorting method: upvotes, score, comments.', required: false })
     @ApiOkResponse({ description: 'The threads have been successfully retrieved.'})
-    async findAll(@Query('sort') sort: string): Promise<Thread[]> {
+    findAll(@Query('sort') sort: string): Promise<Thread[]> {
         const sortMethods = {
             upvotes: () => this.threadsService.findAllSortedByUpvotes(),
             score: () => this.threadsService.findAllSortedByScore(),
@@ -126,7 +126,7 @@ export class ThreadsController {
         }
 
         try {
-            return await sortMethod();
+            return sortMethod();
         } catch (error) {
             throw new HttpException('Unable to retrieve threads', HttpStatus.UNPROCESSABLE_ENTITY);
         }
@@ -136,8 +136,8 @@ export class ThreadsController {
     @ApiParam({ name: 'id', type: String, description: 'The id of the thread to retrieve.' })
     @ApiOkResponse({ description: 'The thread has been successfully retrieved.'})
     @ApiNotFoundResponse({ description: 'Thread not found'})
-    async findOne(@Param('id') id: string): Promise<Thread> {
-        return await this.threadsService
+    findOne(@Param('id') id: string): Promise<Thread> {
+        return this.threadsService
             .findOne(id)
             .then(thread => thread)
             .catch(error => {
