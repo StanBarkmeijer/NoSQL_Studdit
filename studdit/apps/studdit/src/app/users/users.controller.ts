@@ -1,9 +1,12 @@
-import { Body, Controller, Post, HttpException, HttpStatus, Get, Put, NotFoundException, Delete } from '@nestjs/common';
+import { Body, Controller, Post, HttpException, HttpStatus, Get, Put, NotFoundException, Delete, ValidationPipe, UnauthorizedException } from '@nestjs/common';
 import { UsersService } from './users.service';
+
 import { CreateUserDto } from './dto/create-user.dto';
-import { User } from './schemas/user.schema';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { ApiCreatedResponse, ApiNotFoundResponse, ApiOkResponse, ApiParam, ApiTags, ApiUnprocessableEntityResponse } from '@nestjs/swagger';
+import { DeleteUserDto } from './dto/delete-user.dto';
+
+import { User } from './schemas/user.schema';
+import { ApiCreatedResponse, ApiNotFoundResponse, ApiOkResponse, ApiParam, ApiTags, ApiUnauthorizedResponse, ApiUnprocessableEntityResponse } from '@nestjs/swagger';
 
 @ApiTags('users')
 @Controller('users')
@@ -13,7 +16,7 @@ export class UsersController {
     @Post()
     @ApiCreatedResponse({ description: 'The user has been successfully created.'})
     @ApiUnprocessableEntityResponse({ description: 'Unable to create user.'})
-    async create(@Body() createUserDto: CreateUserDto): Promise<User> {
+    async create(@Body(new ValidationPipe()) createUserDto: CreateUserDto): Promise<User> {
         return await this.usersService
             .create(createUserDto)
             .then(user => user)
@@ -51,8 +54,9 @@ export class UsersController {
     @ApiParam({ name: 'id', type: String, description: 'The id of the user to update.' })
     @ApiOkResponse({ description: 'The user has been successfully updated.'})
     @ApiNotFoundResponse({ description: 'User not found'})
+    @ApiUnauthorizedResponse({ description: 'Current password is incorrect'})
     @ApiUnprocessableEntityResponse({ description: 'Unable to update user'})
-    async update(@Body() updateUserDto: UpdateUserDto, id: string): Promise<User> {
+    async update(@Body(new ValidationPipe()) updateUserDto: UpdateUserDto, id: string): Promise<User> {
         return await this.usersService
             .update(id, updateUserDto)
             .then(user => user)
@@ -60,7 +64,12 @@ export class UsersController {
                 if (error instanceof NotFoundException) {
                     throw new HttpException('User not found', HttpStatus.NOT_FOUND);
                 }
-                else throw new HttpException('Unable to update user', HttpStatus.UNPROCESSABLE_ENTITY);
+
+                if (error instanceof UnauthorizedException) {
+                    throw new HttpException('Current password is incorrect', HttpStatus.UNAUTHORIZED);
+                }
+
+                throw new HttpException('Unable to update user', HttpStatus.UNPROCESSABLE_ENTITY);
             });
     };
 
@@ -69,15 +78,20 @@ export class UsersController {
     @ApiOkResponse({ description: 'The user has been successfully deleted.'})
     @ApiNotFoundResponse({ description: 'User not found'})
     @ApiUnprocessableEntityResponse({ description: 'Unable to delete user'})
-    async remove(id: string): Promise<User> {
+    async remove(@Body(new ValidationPipe()) deleteUserDTO: DeleteUserDto, id: string): Promise<User> {
         return await this.usersService
-            .delete(id)
+            .delete(id, deleteUserDTO)
             .then(user => user)
             .catch(error => {
                 if (error instanceof NotFoundException) {
                     throw new HttpException('User not found', HttpStatus.NOT_FOUND);
                 }
-                else throw new HttpException('Unable to delete user', HttpStatus.UNPROCESSABLE_ENTITY);
+
+                if (error instanceof UnauthorizedException) {
+                    throw new HttpException('Password is incorrect', HttpStatus.UNAUTHORIZED);
+                }
+
+                throw new HttpException('Unable to delete user', HttpStatus.UNPROCESSABLE_ENTITY);
             });
     };
 }
