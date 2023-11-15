@@ -165,4 +165,18 @@ export class ThreadsService {
             throw new NotFoundException('Threads not found');
         }
     }
+
+    async findOne(id: string): Promise<Thread> {
+        try {
+            const thread = await this.threadModel.findOne({ _id: id });
+
+            if (!thread) {
+                throw new NotFoundException('Thread not found');
+            }
+
+            return thread;
+        } catch (error) {
+            throw new Error('Unable to find thread')
+        }
+    }
 }

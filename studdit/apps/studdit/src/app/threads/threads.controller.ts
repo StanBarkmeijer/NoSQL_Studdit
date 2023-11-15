@@ -131,4 +131,21 @@ export class ThreadsController {
             throw new HttpException('Unable to retrieve threads', HttpStatus.UNPROCESSABLE_ENTITY);
         }
     }
+
+    @Get(':id')
+    @ApiParam({ name: 'id', type: String, description: 'The id of the thread to retrieve.' })
+    @ApiOkResponse({ description: 'The thread has been successfully retrieved.'})
+    @ApiNotFoundResponse({ description: 'Thread not found'})
+    async findOne(@Param('id') id: string): Promise<Thread> {
+        return await this.threadsService
+            .findOne(id)
+            .then(thread => thread)
+            .catch(error => {
+                if (error instanceof NotFoundException) {
+                    throw new HttpException('Thread not found', HttpStatus.NOT_FOUND);
+                }
+
+                throw new HttpException('Unable to retrieve thread', HttpStatus.UNPROCESSABLE_ENTITY);
+            });
+    }
 }
