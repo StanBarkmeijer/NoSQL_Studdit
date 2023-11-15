@@ -1,5 +1,5 @@
-import { BadRequestException, Body, Controller, Delete, HttpException, HttpStatus, NotFoundException, Param, Patch, Post, ValidationPipe } from '@nestjs/common';
-import { ApiCreatedResponse, ApiNotFoundResponse, ApiOkResponse, ApiTags, ApiUnprocessableEntityResponse } from '@nestjs/swagger';
+import { BadRequestException, Body, Controller, Delete, Get, HttpException, HttpStatus, NotFoundException, Param, Patch, Post, ValidationPipe } from '@nestjs/common';
+import { ApiCreatedResponse, ApiNotFoundResponse, ApiOkResponse, ApiParam, ApiTags, ApiUnprocessableEntityResponse } from '@nestjs/swagger';
 import { CommentsService } from './comments.service';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { Comment } from './schemas/comment.schema';
@@ -28,6 +28,7 @@ export class CommentsController {
     }
 
     @Post(':id')
+    @ApiParam({ name: 'id', type: String, description: 'The id of the parent comment.' })
     @ApiCreatedResponse({ description: 'The nested comment has been successfully created.'})
     @ApiUnprocessableEntityResponse({ description: 'Unable to create nested comment.'})
     @ApiNotFoundResponse({ description: 'User or Parent comment not found'})
@@ -45,6 +46,7 @@ export class CommentsController {
     }
 
     @Delete(':id')
+    @ApiParam({ name: 'id', type: String, description: 'The id of the comment to delete.' })
     @ApiOkResponse({ description: 'The comment has been successfully deleted.'})
     @ApiNotFoundResponse({ description: 'Comment not found'})
     @ApiUnprocessableEntityResponse({ description: 'Unable to delete comment'})
@@ -62,6 +64,7 @@ export class CommentsController {
     }
 
     @Patch(':id/upvote')
+    @ApiParam({ name: 'id', type: String, description: 'The id of the comment to upvote.' })
     @ApiOkResponse({ description: 'The comment has been successfully upvoted.'})
     @ApiNotFoundResponse({ description: 'Comment or User not found'})
     @ApiUnprocessableEntityResponse({ description: 'Unable to upvote comment'})
@@ -83,6 +86,7 @@ export class CommentsController {
     }
 
     @Patch(':id/downvote')
+    @ApiParam({ name: 'id', type: String, description: 'The id of the comment to downvote.' })
     @ApiOkResponse({ description: 'The comment has been successfully downvoted.'})
     @ApiNotFoundResponse({ description: 'Comment or User not found'})
     @ApiUnprocessableEntityResponse({ description: 'Unable to downvote comment'})
@@ -100,6 +104,60 @@ export class CommentsController {
                 }
 
                 throw new HttpException('Unable to downvote comment', HttpStatus.UNPROCESSABLE_ENTITY);
+            });
+    }
+
+    @Get(':id/thread')
+    @ApiParam({ name: 'id', type: String, description: 'The id of the comment to get the thread from.' })
+    @ApiOkResponse({ description: 'The thread has been successfully retrieved.'})
+    @ApiNotFoundResponse({ description: 'Thread not found'})
+    @ApiUnprocessableEntityResponse({ description: 'Unable to get comments'})
+    async getCommentsByThreadId(@Param('id') id: string): Promise<Comment[]> {
+        return await this.commentsService
+            .getCommentsByThreadId(id)
+            .then(comments => comments)
+            .catch(error => {
+                if (error instanceof NotFoundException) {
+                    throw new HttpException('Thread not found', HttpStatus.NOT_FOUND);
+                }
+
+                throw new HttpException('Unable to get comments', HttpStatus.UNPROCESSABLE_ENTITY);
+            });
+    }
+
+    @Get(':id')
+    @ApiParam({ name: 'id', type: String, description: 'The id of the comment to get.' })
+    @ApiOkResponse({ description: 'The comment has been successfully retrieved.'})
+    @ApiNotFoundResponse({ description: 'Comment not found'})
+    @ApiUnprocessableEntityResponse({ description: 'Unable to get comment'})
+    async getCommentById(@Param('id') id: string): Promise<Comment> {
+        return await this.commentsService
+            .getCommentById(id)
+            .then(comment => comment)
+            .catch(error => {
+                if (error instanceof NotFoundException) {
+                    throw new HttpException('Comment not found', HttpStatus.NOT_FOUND);
+                }
+
+                throw new HttpException('Unable to get comment', HttpStatus.UNPROCESSABLE_ENTITY);
+            });
+    }
+
+    @Get(':id/nested')
+    @ApiParam({ name: 'id', type: String, description: 'The id of the comment to get nested comments from.' })
+    @ApiOkResponse({ description: 'The nested comments have been successfully retrieved.'})
+    @ApiNotFoundResponse({ description: 'Comment not found'})
+    @ApiUnprocessableEntityResponse({ description: 'Unable to get nested comments'})
+    async getNestedComments(@Param('id') id: string): Promise<Comment[]> {
+        return await this.commentsService
+            .getNestedComments(id)
+            .then(comments => comments)
+            .catch(error => {
+                if (error instanceof NotFoundException) {
+                    throw new HttpException('Comment not found', HttpStatus.NOT_FOUND);
+                }
+
+                throw new HttpException('Unable to get nested comments', HttpStatus.UNPROCESSABLE_ENTITY);
             });
     }
 }

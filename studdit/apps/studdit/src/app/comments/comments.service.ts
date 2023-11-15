@@ -147,4 +147,48 @@ export class CommentsService {
             throw new Error('Unable to downvote comment');
         }
     }
+
+    async getCommentsByThreadId(id: string): Promise<Comment[]> {
+        try {
+            const thread = await this.threadModel.findOne({ _id: id });
+
+            if (!thread) {
+                throw new NotFoundException('Thread not found');
+            }
+
+            const comments = await this.commentModel.find({ threadId: id });
+            return comments;
+        } catch (error) {
+            throw new Error('Unable to get comments');
+        }
+    }
+
+    async getCommentById(id: string): Promise<Comment> {
+        try {
+            const comment = await this.commentModel.findOne({ _id: id });
+
+            if (!comment) {
+                throw new NotFoundException('Comment not found');
+            }
+
+            return comment;
+        } catch (error) {
+            throw new Error('Unable to get comment');
+        }
+    }
+
+    async getNestedComments(id: string): Promise<Comment[]> {
+        try {
+            const comment = await this.commentModel.findOne({ _id: id });
+
+            if (!comment) {
+                throw new NotFoundException('Comment not found');
+            }
+
+            const nestedComments = await this.commentModel.find({ _id: { $in: comment.comments } });
+            return nestedComments;
+        } catch (error) {
+            throw new Error('Unable to get nested comments');
+        }
+    }
 }
