@@ -1,6 +1,5 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { HydratedDocument, Document, Types } from "mongoose";
-import { Comment } from "../../comments/schemas/comment.schema";
 
 export type ThreadDocument = HydratedDocument<Thread>;
 
