@@ -2,7 +2,7 @@ import { BadRequestException, Inject, Injectable, NotFoundException } from '@nes
 import { Thread } from './schemas/threads.schema';
 import { User } from '../users/schemas/user.schema';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { CreateThreadDto } from './dto/create-thread.dto';
 import { NotFoundError } from 'rxjs';
 
@@ -130,7 +130,9 @@ export class ThreadsService {
 
     async findAll(): Promise<Thread[]> {
         try {
-            return this.threadModel.find();
+            return this.threadModel
+                .find()
+                .select('-comments');
         } catch (error) {
             throw new NotFoundException('Threads not found');
         }
@@ -138,7 +140,10 @@ export class ThreadsService {
 
     async findAllSortedByUpvotes(): Promise<Thread[]> {
         try {
-            return this.threadModel.find().sort({ upvotes: -1 });
+            return this.threadModel
+                .find()
+                .sort({ upvotes: -1 })
+                .select('-comments');
         } catch (error) {
             throw new NotFoundException('Threads not found');
         }
@@ -148,7 +153,8 @@ export class ThreadsService {
         try {
             return this.threadModel.aggregate([
                 { $addFields: { voteDifference: { $subtract: [ { $size: "$upvotes" }, { $size: "$downvotes" } ] } } },
-                { $sort: { voteDifference: -1 } }
+                { $sort: { voteDifference: -1 } },
+                { $project: { comments: 0 } }
             ]);
         } catch (error) {
             throw new NotFoundException('Threads not found');
@@ -159,7 +165,8 @@ export class ThreadsService {
         try {
             return this.threadModel.aggregate([
                 { $addFields: { commentCount: { $size: "$comments" } } },
-                { $sort: { commentCount: -1 } }
+                { $sort: { commentCount: -1 } },
+                { $project: { comments: 0 } }
             ]);
         } catch (error) {
             throw new NotFoundException('Threads not found');
@@ -168,15 +175,44 @@ export class ThreadsService {
 
     async findOne(id: string): Promise<Thread> {
         try {
-            const thread = await this.threadModel.findOne({ _id: id });
+            const thread = await this.threadModel.aggregate([
+                { $match: { _id: new Types.ObjectId(id) } },
+                {
+                    $lookup: {
+                        from: 'comments',
+                        localField: '_id',
+                        foreignField: 'thread',
+                        as: 'comments'
+                    }
+                },
+                {
+                    $addFields: {
+                        upvotesCount: { $size: "$upvotes" },
+                        downvotesCount: { $size: "$downvotes" },
+                        comments: {
+                            $map: {
+                                input: "$comments",
+                                as: "comment",
+                                in: {
+                                    _id: "$$comment._id",
+                                    content: "$$comment.content",
+                                    upvotesCount: { $size: "$$comment.upvotes" },
+                                    downvotesCount: { $size: "$$comment.downvotes" },
+                                }
+                            }
+                        }
+                    }
+                },
+                { $unset: ["upvotes", "downvotes"] }
+            ]);
 
-            if (!thread) {
+            if (!thread.length) {
                 throw new NotFoundException('Thread not found');
             }
 
-            return thread;
+            return thread[0];
         } catch (error) {
-            throw new Error('Unable to find thread')
+            throw new Error('Unable to find thread');
         }
     }
 }
