@@ -1,4 +1,4 @@
-import { Body, Controller, HttpException, HttpStatus, NotFoundException, Param, Post, Put, ValidationPipe } from '@nestjs/common';
+import { BadRequestException, Body, Controller, HttpException, HttpStatus, NotFoundException, Param, Patch, Post, Put, ValidationPipe } from '@nestjs/common';
 import { ApiCreatedResponse, ApiNotFoundResponse, ApiOkResponse, ApiParam, ApiTags, ApiUnprocessableEntityResponse } from '@nestjs/swagger';
 import { ThreadsService } from './threads.service';
 import { CreateThreadDto } from './dto/create-thread.dto';
@@ -41,6 +41,52 @@ export class ThreadsController {
                 }
 
                 throw new HttpException('Unable to update thread', HttpStatus.UNPROCESSABLE_ENTITY);
+            });
+    };
+
+    @Patch(':id/upvote')
+    @ApiParam({ name: 'id', type: String, description: 'The id of the thread to upvote.' })
+    @ApiOkResponse({ description: 'The thread has been successfully upvoted.'})
+    @ApiNotFoundResponse({ description: 'Thread not found'})
+    @ApiNotFoundResponse({ description: 'User not found'})
+    @ApiUnprocessableEntityResponse({ description: 'Unable to upvote thread'})
+    async upvote(@Param('id') id: string, @Body('username') username: string): Promise<Thread> {
+        return await this.threadsService
+            .upvote(id, username)
+            .then(thread => thread)
+            .catch(error => {
+                if (error instanceof NotFoundException) {
+                    throw new HttpException('Thread or User not found', HttpStatus.NOT_FOUND);
+                }
+
+                if (error instanceof BadRequestException) {
+                    throw new HttpException('Bad request', HttpStatus.BAD_REQUEST);
+                }
+
+                throw new HttpException('Unable to upvote thread', HttpStatus.UNPROCESSABLE_ENTITY);
+            });
+    };
+
+    @Patch(':id/downvote')
+    @ApiParam({ name: 'id', type: String, description: 'The id of the thread to downvote.' })
+    @ApiOkResponse({ description: 'The thread has been successfully downvoted.'})
+    @ApiNotFoundResponse({ description: 'Thread not found'})
+    @ApiNotFoundResponse({ description: 'User not found'})
+    @ApiUnprocessableEntityResponse({ description: 'Unable to downvote thread'})
+    async downvote(@Param('id') id: string, @Body('username') username: string): Promise<Thread> {
+        return await this.threadsService
+            .downvote(id, username)
+            .then(thread => thread)
+            .catch(error => {
+                if (error instanceof NotFoundException) {
+                    throw new HttpException('Thread or User not found', HttpStatus.NOT_FOUND);
+                }
+
+                if (error instanceof BadRequestException) {
+                    throw new HttpException('Bad request', HttpStatus.BAD_REQUEST);
+                }
+
+                throw new HttpException('Unable to downvote thread', HttpStatus.UNPROCESSABLE_ENTITY);
             });
     };
 }

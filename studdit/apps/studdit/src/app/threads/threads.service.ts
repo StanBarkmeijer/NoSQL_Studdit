@@ -1,4 +1,4 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { Thread } from './schemas/threads.schema';
 import { User } from '../users/schemas/user.schema';
 import { InjectModel } from '@nestjs/mongoose';
@@ -40,6 +40,76 @@ export class ThreadsService {
             return updatedThread;
         } catch (error) {
             throw new Error('Unable to update thread');
+        }
+    }
+
+    async upvote(id: string, username: string): Promise<Thread> {
+        try {
+            const thread = await this.threadModel.findOne({ _id: id });
+
+            if (!thread) {
+                throw new NotFoundException('Thread not found');
+            }
+
+            const user: User = await this.userModel.findOne({ username: username });
+
+            if (!user) {
+                throw new NotFoundException('User not found');
+            }
+
+            const hasUpvoted = thread.upvotes.includes(user._id);
+            const hasDownvoted = thread.downvotes.includes(user._id);
+
+            if (hasUpvoted) {
+                throw new BadRequestException('User has already upvoted this thread');
+            }
+
+            if (hasDownvoted) {
+                const idx = thread.downvotes.indexOf(user._id);
+                thread.downvotes.splice(idx, 1);
+            }
+
+            thread.upvotes.push(user._id);
+            await thread.save();
+
+            return thread;
+        } catch (error) {
+            throw new Error('Unable to upvote thread');
+        }
+    }
+
+    async downvote(id: string, username: string): Promise<Thread> {
+        try {
+            const thread = await this.threadModel.findOne({ _id: id });
+
+            if (!thread) {
+                throw new NotFoundException('Thread not found');
+            }
+
+            const user: User = await this.userModel.findOne({ username: username });
+
+            if (!user) {
+                throw new NotFoundException('User not found');
+            }
+
+            const hasUpvoted = thread.upvotes.includes(user._id);
+            const hasDownvoted = thread.downvotes.includes(user._id);
+
+            if (hasDownvoted) {
+                throw new BadRequestException('User has already downvoted this thread');
+            }
+
+            if (hasUpvoted) {
+                const idx = thread.upvotes.indexOf(user._id);
+                thread.upvotes.splice(idx, 1);
+            }
+
+            thread.downvotes.push(user._id);
+            await thread.save();
+
+            return thread;
+        } catch (error) {
+            throw new Error('Unable to downvote thread');
         }
     }
 }
