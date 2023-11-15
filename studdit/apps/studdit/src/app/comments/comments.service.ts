@@ -62,4 +62,19 @@ export class CommentsService {
             throw new Error('Unable to create nested comment');
         }
     }
+
+    async delete (id: string): Promise<Comment> {
+        try {
+            const comment = await this.commentModel.findOne({ _id: id });
+
+            if (!comment) {
+                throw new NotFoundException('Comment not found');
+            }
+
+            const deletedComment = await this.commentModel.findByIdAndDelete(id);
+            return deletedComment;
+        } catch (error) {
+            throw new Error('Unable to delete comment');
+        }
+    }
 }
