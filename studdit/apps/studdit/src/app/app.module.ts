@@ -38,7 +38,7 @@ import { Neo4jConfig } from './neo4j/neo4j-config.interface';
         password: configService.get('NEO4J_PASSWORD'),
         database: configService.get('NEO4J_DATABASE')
       })
-    })
+    }),
   ],
   controllers: [AppController],
   providers: [AppService],
