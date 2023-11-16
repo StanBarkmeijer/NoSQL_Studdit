@@ -7,7 +7,7 @@ import { IsActiveMiddleware } from '../middleware/is-active.middleware';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: 'User', schema: UserSchema }])
+    MongooseModule.forFeature([{ name: 'User', schema: UserSchema }]),
   ],
   controllers: [FriendsController],
   providers: [FriendsService]

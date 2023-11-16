@@ -11,7 +11,7 @@ import { IsActiveMiddleware } from '../middleware/is-active.middleware';
   imports: [
     MongooseModule.forFeature([{ name: 'Comment', schema: CommentSchema }]),
     MongooseModule.forFeature([{ name: 'User', schema: UserSchema }]),
-    MongooseModule.forFeature([{ name: 'Thread', schema: ThreadSchema }])
+    MongooseModule.forFeature([{ name: 'Thread', schema: ThreadSchema }]),
   ],
   providers: [CommentsService],
   controllers: [CommentsController]

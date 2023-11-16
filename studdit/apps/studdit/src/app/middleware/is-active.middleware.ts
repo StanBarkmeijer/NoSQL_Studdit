@@ -1,9 +1,13 @@
 import { Injectable, NestMiddleware } from '@nestjs/common';
-import { UsersService } from '../users/users.service';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { User } from '../users/schemas/user.schema';
 
 @Injectable()
 export class IsActiveMiddleware implements NestMiddleware {
-  constructor(private readonly userService: UsersService) {}
+  constructor(
+    @InjectModel(User.name) private userModel: Model<User>
+  ) {}
 
   async use(req: any, res: any, next: () => void) {
     try {
@@ -15,7 +19,7 @@ export class IsActiveMiddleware implements NestMiddleware {
           .send({ message: 'No authorization header provided' });
       }
 
-      const user = await this.userService.findOne(username);
+      const user = await this.userModel.findOne(username);
 
       if (!user) {
         return res

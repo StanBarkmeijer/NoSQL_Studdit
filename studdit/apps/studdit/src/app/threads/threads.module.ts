@@ -4,7 +4,7 @@ import { Comment, CommentSchema } from '../comments/schemas/comment.schema';
 import { ThreadsController } from './threads.controller';
 import { ThreadsService } from './threads.service';
 import { Thread, ThreadSchema } from './schemas/threads.schema';
-import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { IsActiveMiddleware } from '../middleware/is-active.middleware';
 
 @Module({
@@ -13,7 +13,7 @@ import { IsActiveMiddleware } from '../middleware/is-active.middleware';
       { name: Thread.name, schema: ThreadSchema },
       { name: User.name, schema: UserSchema },
       { name: Comment.name, schema: CommentSchema }
-    ])
+    ]),
   ],
   controllers: [ThreadsController],
   providers: [ThreadsService]

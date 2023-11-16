@@ -24,6 +24,12 @@ async function bootstrap() {
     .setVersion('1.0')
     .addServer(`http://localhost:${process.env.PORT}`)
     .addServer(`https://studdit-api.herokuapp.com`)
+    .addSecurity('username', {
+      type: 'apiKey',
+      name: 'Authorization',
+      in: 'header',
+      description: 'Your username (bad security, just for POC).'
+    })
     .build();
 
   const document = SwaggerModule.createDocument(app, config);

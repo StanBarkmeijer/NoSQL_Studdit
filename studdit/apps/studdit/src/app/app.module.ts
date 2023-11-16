@@ -11,6 +11,7 @@ import { Neo4jModule } from './neo4j/neo4j.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { Neo4jConfig } from './neo4j/neo4j-config.interface';
 import { FriendsModule } from './friends/friends.module';
+import { MiddlewareModule } from './middleware/middleware.module';
 
 @Module({
   imports: [
@@ -28,6 +29,8 @@ import { FriendsModule } from './friends/friends.module';
     UsersModule, 
     ThreadsModule, 
     CommentsModule, 
+    FriendsModule, 
+    MiddlewareModule,
     Neo4jModule.forRootAsync({
       imports: [ ConfigModule ],
       inject: [ ConfigService ],
@@ -39,7 +42,7 @@ import { FriendsModule } from './friends/friends.module';
         password: configService.get('NEO4J_PASSWORD'),
         database: configService.get('NEO4J_DATABASE')
       })
-    }), FriendsModule,
+    }), 
   ],
   controllers: [AppController],
   providers: [AppService],
