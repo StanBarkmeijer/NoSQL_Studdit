@@ -30,6 +30,15 @@ export class FriendsService {
             throw new NotFoundException(`User ${!userExists ? user : friend} not found`);
         }
 
+        const [mongoUser, mongoFried] = await Promise.all([
+            this.userModel.findOne({ username: user }),
+            this.userModel.findOne({ username: friend })
+        ]);
+
+        if (!mongoUser.isActive || !mongoFried.isActive) {
+            throw new NotFoundException(`User ${!mongoUser.isActive ? user : friend} is not active`);
+        }
+
         const neo = this.neo4jService.beginTransaction();
 
         try {
