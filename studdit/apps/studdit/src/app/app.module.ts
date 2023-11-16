@@ -10,6 +10,7 @@ import { CommentsModule } from './comments/comments.module';
 import { Neo4jModule } from './neo4j/neo4j.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { Neo4jConfig } from './neo4j/neo4j-config.interface';
+import { FriendsModule } from './friends/friends.module';
 
 @Module({
   imports: [
@@ -38,7 +39,7 @@ import { Neo4jConfig } from './neo4j/neo4j-config.interface';
         password: configService.get('NEO4J_PASSWORD'),
         database: configService.get('NEO4J_DATABASE')
       })
-    }),
+    }), FriendsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

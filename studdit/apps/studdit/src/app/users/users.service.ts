@@ -6,17 +6,45 @@ import { Model } from 'mongoose';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { DeleteUserDto } from './dto/delete-user.dto';
+import { Neo4jService } from '../neo4j/neo4j.service';
 
 @Injectable()
 export class UsersService {
-    constructor(@InjectModel(User.name) private userModel: Model<User>) {}
+    constructor(
+        @InjectModel(User.name) private userModel: Model<User>,
+        private readonly neo4jService: Neo4jService
+    ) {}
 
-    async create(createUserDto: CreateUserDto): Promise<User> {
+    private async userExists(username: string) {
+        const user = await this.userModel.findOne({ username });
+        return !!user;
+    }
+
+    async create(createUserDto: CreateUserDto): Promise<{ mongoUser: User, neoUser: any }> {
+        const neo = this.neo4jService.beginTransaction();
+
         try {
+            const userExists = await this.userExists(createUserDto.username);
+
+            if (userExists) {
+                throw new UnauthorizedException('Username already exists');
+            }
+
             const createdUser = await this.userModel.create(createUserDto);
+
+            const neoResult = await neo.run(
+                `CREATE (u:User {username: $username}) RETURN u`,
+                { username: createUserDto.username }
+            );
+
+            await neo.commit();
             
-            return createdUser;
+            return {
+                mongoUser: createdUser,
+                neoUser: neoResult
+            }
         } catch (error) {
+            await neo.rollback();
             throw new Error('Unable to create user');
         }
     }
@@ -37,7 +65,9 @@ export class UsersService {
         }
     }
 
-    async delete(id: string, deleteUserDTO: DeleteUserDto): Promise<User> {
+    async delete(id: string, deleteUserDTO: DeleteUserDto): Promise<{ mongoUser: User, neoUser: any }> {
+        const neo = this.neo4jService.beginTransaction();
+
         try {
             const user = await this.userModel.findOne({ _id: id });
 
@@ -50,8 +80,19 @@ export class UsersService {
             }
 
             const deletedUser = await this.userModel.findOneAndDelete({ _id: id });
-            return deletedUser;
+            const neoResult = await neo.run(
+                `MATCH (u:User {username: $username}) DETACH DELETE u`,
+                { username: deletedUser.username }
+            );
+
+            await neo.commit();
+
+            return {
+                mongoUser: deletedUser,
+                neoUser: neoResult
+            };
         } catch (error) {
+            await neo.rollback();
             throw new Error('Unable to delete user');
         }
     }
