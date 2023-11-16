@@ -20,7 +20,7 @@ export class FriendsService {
      * @param user A username
      * @param friend A username
      */
-    async makeFriend(user: string, friend: string) {
+    async makeFriend(user: string, friend: string): Promise<Record<string, any>> {
         const [userExists, friendExists] = await Promise.all([
             this.userExists(user),
             this.userExists(friend)
@@ -39,7 +39,7 @@ export class FriendsService {
             );
 
             if (existingFriendship.records.length > 0) {
-                return existingFriendship;
+                return existingFriendship.records;
             } else {
                 const result = await neo.run(
                     `MERGE (u:User {username: $user})-[:FRIENDS_WITH]-(f:User {username: $friend})`,
@@ -48,7 +48,7 @@ export class FriendsService {
 
                 await neo.commit();
 
-                return result;
+                return result.records;
             }
         } catch (error) {
             await neo.rollback();
@@ -61,7 +61,7 @@ export class FriendsService {
      * @param user A username
      * @param friend A username
      */
-    async removeFriend(user: string, friend: string) {
+    async removeFriend(user: string, friend: string): Promise<Record<string, any>> {
         const [userExists, friendExists] = await Promise.all([
             this.userExists(user),
             this.userExists(friend)
@@ -87,9 +87,9 @@ export class FriendsService {
 
                 await neo.commit();
 
-                return result;
+                return result.records;
             } else {
-                return existingFriendship;
+                return existingFriendship.records;
             }
         } catch (error) {
             await neo.rollback();

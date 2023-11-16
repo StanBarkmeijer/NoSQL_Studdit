@@ -7,7 +7,6 @@ import { DeleteUserDto } from './dto/delete-user.dto';
 
 import { User } from './schemas/user.schema';
 import { ApiCreatedResponse, ApiNotFoundResponse, ApiOkResponse, ApiParam, ApiTags, ApiUnauthorizedResponse, ApiUnprocessableEntityResponse } from '@nestjs/swagger';
-import { Neo4jService } from '../neo4j/neo4j.service';
 
 @ApiTags('users')
 @Controller('users')
@@ -17,7 +16,7 @@ export class UsersController {
     @Post()
     @ApiCreatedResponse({ description: 'The user has been successfully created.'})
     @ApiUnprocessableEntityResponse({ description: 'Unable to create user.'})
-    create(@Body(new ValidationPipe()) createUserDto: CreateUserDto): Promise<User> {
+    create(@Body(new ValidationPipe()) createUserDto: CreateUserDto): Promise<{ mongoUser: User, neoUser: any }> {
         return this.usersService
             .create(createUserDto)
             .then(user => user)
@@ -79,7 +78,7 @@ export class UsersController {
     @ApiOkResponse({ description: 'The user has been successfully deleted.'})
     @ApiNotFoundResponse({ description: 'User not found'})
     @ApiUnprocessableEntityResponse({ description: 'Unable to delete user'})
-    remove(@Body(new ValidationPipe()) deleteUserDTO: DeleteUserDto, @Param('id') id: string): Promise<User> {
+    remove(@Body(new ValidationPipe()) deleteUserDTO: DeleteUserDto, @Param('id') id: string): Promise<{ mongoUser: User, neoUser: any }> {
         return this.usersService
             .delete(id, deleteUserDTO)
             .then(user => user)
