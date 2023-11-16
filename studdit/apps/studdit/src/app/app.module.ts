@@ -13,20 +13,30 @@ import { Neo4jConfig } from './neo4j/neo4j-config.interface';
 
 @Module({
   imports: [
-    MongooseModule.forRoot("mongodb+srv://administrator:PC8u9kW6@studdit.thvtbws.mongodb.net/?retryWrites=true&w=majority"),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: '.env'
+    }),
+    MongooseModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        uri: `mongodb+srv://${configService.get('MONGO_USERNAME')}:${configService.get('MONGO_PASSWORD')}@${configService.get('MONGO_PATH')}/?retryWrites=true&w=majority`,
+      }),
+      inject: [ConfigService]
+    }),
     UsersModule, 
     ThreadsModule, 
     CommentsModule, 
     Neo4jModule.forRootAsync({
       imports: [ ConfigModule ],
       inject: [ ConfigService ],
-      useFactory: (config: ConfigService): Neo4jConfig => ({
-        scheme: config.get('NEO4J_SCHEME'),
-        host: config.get('NEO4J_HOST'),
-        port: config.get('NEO4J_PORT'),
-        username: config.get('NEO4J_USERNAME'),
-        password: config.get('NEO4J_PASSWORD'),
-        database: config.get('NEO4J_DATABASE')
+      useFactory: (configService: ConfigService): Neo4jConfig => ({
+        scheme: configService.get('NEO4J_SCHEME'),
+        host: configService.get('NEO4J_HOST'),
+        port: configService.get('NEO4J_PORT'),
+        username: configService.get('NEO4J_USERNAME'),
+        password: configService.get('NEO4J_PASSWORD'),
+        database: configService.get('NEO4J_DATABASE')
       })
     })
   ],
