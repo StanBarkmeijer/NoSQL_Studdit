@@ -6,12 +6,14 @@ import { ThreadSchema } from '../threads/schemas/threads.schema';
 import { CommentsController } from './comments.controller';
 import { CommentsService } from './comments.service';
 import { IsActiveMiddleware } from '../middleware/is-active.middleware';
+import { MiddlewareModule } from '../middleware/middleware.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: 'Comment', schema: CommentSchema }]),
     MongooseModule.forFeature([{ name: 'User', schema: UserSchema }]),
     MongooseModule.forFeature([{ name: 'Thread', schema: ThreadSchema }]),
+    MiddlewareModule.forRoot()
   ],
   providers: [CommentsService],
   controllers: [CommentsController]

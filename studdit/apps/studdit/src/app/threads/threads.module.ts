@@ -6,6 +6,7 @@ import { ThreadsService } from './threads.service';
 import { Thread, ThreadSchema } from './schemas/threads.schema';
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { IsActiveMiddleware } from '../middleware/is-active.middleware';
+import { MiddlewareModule } from '../middleware/middleware.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { IsActiveMiddleware } from '../middleware/is-active.middleware';
       { name: User.name, schema: UserSchema },
       { name: Comment.name, schema: CommentSchema }
     ]),
+    MiddlewareModule.forRoot()
   ],
   controllers: [ThreadsController],
   providers: [ThreadsService]
