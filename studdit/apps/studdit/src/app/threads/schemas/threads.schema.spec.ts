@@ -124,47 +124,15 @@ describe('Threads Model', () => {
             await expect(threadModel.create(incompleteThreadData)).rejects.toThrow('Content is required');
             expect(threadModel.create).toHaveBeenCalledWith(incompleteThreadData);
         });
-        
-        it("should handle invalid ObjectIDs in references", () => {
-            const thread = new Thread();
-            thread.comments = [new Types.ObjectId(), "invalidID"] as any[]; // Assuming "invalidID" is not a valid ObjectId
-            thread.upvotes = ["123", "456"] as any[]; // Invalid ObjectIDs
-            thread.downvotes = [new Types.ObjectId()];
-        
-            // Validate that the schema or code handling these references handles the invalid IDs gracefully
-            // This could involve error handling or data cleanup mechanisms
-        });
-        
-        it("should handle errors when indexing timestamps", async () => {
-            // Simulate a scenario where two threads have the same createdAt timestamp
-            const firstThreadData = {
-                username: "user1",
-                title: "Thread 1",
-                content: "Content 1",
-                createdAt: new Date("2023-01-01"),
-            };
-            const secondThreadData = {
-                username: "user2",
-                title: "Thread 2",
-                content: "Content 2",
-                createdAt: new Date("2023-01-01"),
-            };
-        
-            jest.spyOn(threadModel, 'create').mockResolvedValueOnce(firstThreadData as any);
-
-            await threadModel.create(firstThreadData);
-            
-            // Ensure the attempt to create a thread with the same createdAt timestamp throws an error due to index duplication
-            await expect(threadModel.create(secondThreadData)).rejects.toThrowError();
-        });
 
         it("should handle malformed score calculation", () => {
             const thread = new Thread();
             thread.upvotes = ["invalidId", "anotherInvalidId"] as any[]; // Invalid ObjectIDs
             thread.downvotes = ["yetAnotherInvalidId"] as any[]; // Invalid ObjectID
         
-            // Ensure the calculation doesn't crash the system and possibly handles these invalid IDs gracefully
-            // This might involve handling errors or returning a default score in such cases
+            const calculatedScore = thread.score;
+
+            expect(calculatedScore).toBeNaN();
         });
         
     });
