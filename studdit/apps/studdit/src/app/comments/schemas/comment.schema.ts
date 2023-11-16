@@ -30,6 +30,11 @@ export class Comment {
 
     // Calculated field for score
     get score(): number {
+        if (
+            this.upvotes.some(upvote => !Types.ObjectId.isValid(upvote)) || 
+            this.downvotes.some(downvote => !Types.ObjectId.isValid(downvote))
+        ) return NaN;
+
         return this.upvotes.length - this.downvotes.length;
     }
 }

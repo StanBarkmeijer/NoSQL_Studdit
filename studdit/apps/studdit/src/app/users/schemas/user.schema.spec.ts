@@ -68,4 +68,52 @@ describe('User Model', () => {
             expect(userModel.updateOne).toHaveBeenCalledWith(userData);
         });
     });
+
+    describe("Unhappy Flow", () => {
+        it("should throw an error when missing username", async () => {	
+            const userData = {
+                password: "testpassword",
+                isActive: true
+            };
+
+            jest.spyOn(userModel, 'create').mockRejectedValueOnce(new Error("Username is required"));
+
+            await expect(userModel.create(userData)).rejects.toThrow("Username is required");
+            expect(userModel.create).toHaveBeenCalledWith(userData);
+        });
+
+        it("should throw an error when missing password", async () => {	
+            const userData = {
+                username: "testuser",
+                isActive: true
+            };
+
+            jest.spyOn(userModel, 'create').mockRejectedValueOnce(new Error("Password is required"));
+
+            await expect(userModel.create(userData)).rejects.toThrow("Password is required");
+            expect(userModel.create).toHaveBeenCalledWith(userData);
+        });
+
+        it("should throw an error when creating a user with an existing username", async () => {
+            const user1: User = {
+                username: "testuser",
+                password: "testpassword",
+                isActive: true
+            };
+            
+            const user2: User = {
+                username: "testuser",
+                password: "testpassword2",
+                isActive: true
+            };
+
+            jest.spyOn(userModel, 'create').mockResolvedValueOnce(user1 as any);
+            jest.spyOn(userModel, 'create').mockRejectedValueOnce(new Error("Username already exists"));
+
+            await userModel.create(user1);
+            await expect(userModel.create(user2)).rejects.toThrow("Username already exists");
+            expect(userModel.create).toHaveBeenCalledWith(user1);
+            expect(userModel.create).toHaveBeenCalledWith(user2);
+        });
+    });
 });
