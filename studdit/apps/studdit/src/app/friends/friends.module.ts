@@ -1,8 +1,9 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { FriendsController } from './friends.controller';
 import { FriendsService } from './friends.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { UserSchema } from '../users/schemas/user.schema';
+import { IsActiveMiddleware } from '../middleware/is-active.middleware';
 
 @Module({
   imports: [
@@ -11,4 +12,10 @@ import { UserSchema } from '../users/schemas/user.schema';
   controllers: [FriendsController],
   providers: [FriendsService]
 })
-export class FriendsModule {}
+export class FriendsModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+      consumer
+        .apply(IsActiveMiddleware)
+        .forRoutes(FriendsController)
+  }
+}

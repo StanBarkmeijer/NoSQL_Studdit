@@ -9,4 +9,12 @@ export class UpdateThreadDto {
     @IsNotEmpty()
     @IsString()
     readonly content: string;
+
+    @ApiProperty({
+        description: "The username of the user",
+        example: "john.doe"
+    })
+    @IsNotEmpty()
+    @IsString()
+    readonly username: string;
 }

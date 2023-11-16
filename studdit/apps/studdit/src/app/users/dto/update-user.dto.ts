@@ -12,4 +12,10 @@ export class UpdateUserDto {
         example: "newPassword123"
     })
     readonly newPassword: string;
+
+    @ApiProperty({
+        description: "Activity status of the user",
+        example: true
+    })
+    readonly isActive: boolean;
 }

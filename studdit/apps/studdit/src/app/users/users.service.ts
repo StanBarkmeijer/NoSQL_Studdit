@@ -33,8 +33,8 @@ export class UsersService {
             const createdUser = await this.userModel.create(createUserDto);
 
             const neoResult = await neo.run(
-                `CREATE (u:User {username: $username}) RETURN u`,
-                { username: createUserDto.username }
+                `CREATE (u:User {username: $username, isActive: $isActive}) RETURN u`,
+                { username: createUserDto.username, isActive: true }
             );
 
             await neo.commit();
@@ -51,7 +51,7 @@ export class UsersService {
 
     async findAll(): Promise<User[]> {
         try {
-            return this.userModel.find();
+            return this.userModel.find({ isActive: true });
         } catch (error) {
             throw new NotFoundException('Users not found');
         }
@@ -59,7 +59,10 @@ export class UsersService {
 
     async findOne(id: string): Promise<User> {
         try {
-            return this.userModel.findOne({ _id: id });
+            return this.userModel.findOne({ 
+                _id: id, 
+                isActive: true 
+            });
         } catch (error) {
             throw new NotFoundException('User not found');
         }
@@ -79,16 +82,17 @@ export class UsersService {
                 throw new UnauthorizedException('Password is incorrect');
             }
 
-            const deletedUser = await this.userModel.findOneAndDelete({ _id: id });
+            user.isActive = false;
+
             const neoResult = await neo.run(
-                `MATCH (u:User {username: $username}) DETACH DELETE u`,
-                { username: deletedUser.username }
+                `MATCH (u:User {username: $username}) SET u.isActive = false`,
+                { username: user.username }
             );
 
             await neo.commit();
 
             return {
-                mongoUser: deletedUser,
+                mongoUser: user,
                 neoUser: neoResult
             };
         } catch (error) {

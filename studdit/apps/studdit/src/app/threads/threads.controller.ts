@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Delete, Get, HttpException, HttpStatus, NotFoundException, Param, Patch, Post, Put, Query, ValidationPipe } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, HttpException, HttpStatus, NotFoundException, Param, Patch, Post, Put, Query, Req, ValidationPipe } from '@nestjs/common';
 import { ApiCreatedResponse, ApiNotFoundResponse, ApiOkResponse, ApiParam, ApiQuery, ApiTags, ApiUnprocessableEntityResponse } from '@nestjs/swagger';
 import { ThreadsService } from './threads.service';
 import { CreateThreadDto } from './dto/create-thread.dto';
@@ -95,9 +95,11 @@ export class ThreadsController {
     @ApiOkResponse({ description: 'The thread has been successfully deleted.'})
     @ApiNotFoundResponse({ description: 'Thread not found'})
     @ApiUnprocessableEntityResponse({ description: 'Unable to delete thread'})
-    delete(@Param('id') id: string): Promise<Thread> {
+    delete(@Param('id') id: string, @Req() req: any): Promise<Thread> {
+        const username = req.headers['authorization'];
+        
         return this.threadsService
-            .delete(id)
+            .delete(id, username)
             .then(thread => thread)
             .catch(error => {
                 if (error instanceof NotFoundException) {

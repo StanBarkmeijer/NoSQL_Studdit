@@ -1,34 +1,42 @@
-import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { Thread } from './schemas/threads.schema';
 import { User } from '../users/schemas/user.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { CreateThreadDto } from './dto/create-thread.dto';
 import { NotFoundError } from 'rxjs';
+import { Neo4jService } from '../neo4j/neo4j.service';
+import { UpdateThreadDto } from './dto/update-thread.dto';
 
 @Injectable()
 export class ThreadsService {
     constructor (
         @InjectModel(Thread.name) private threadModel: Model<Thread>,
         @InjectModel(User.name) private userModel: Model<User>,
+        private readonly neo4jService: Neo4jService
     ) {}
 
     async create(createThreadDto: CreateThreadDto): Promise<Thread> {
+        const neo = this.neo4jService.beginTransaction();
+
         try {
-            const user = await this.userModel.findOne({ username: createThreadDto.username });
-
-            if (!user) {
-                throw new NotFoundException('User not found');
-            }
-
             const createdThread = await this.threadModel.create(createThreadDto);
+
+            await neo.run(
+                `CREATE (t:Thread { title: $title, content: $content }) RETURN t`,
+                { title: createThreadDto.title, id: createdThread._id }
+            );
+
+            await neo.commit();
+
             return createdThread;
         } catch (error) {
+            await neo.rollback();
             throw new Error('Unable to create thread');
         }
     }
 
-    async update(id: string, updateThreadDto: CreateThreadDto): Promise<Thread> {
+    async update(id: string, updateThreadDto: UpdateThreadDto): Promise<Thread> {
         try {
             const thread = await this.threadModel.findOne({ _id: id });
 
@@ -36,7 +44,12 @@ export class ThreadsService {
                 throw new NotFoundException('Thread not found');
             }
 
+            if (thread.username !== updateThreadDto.username) {
+                throw new UnauthorizedException('User is not authorized to update this thread');
+            }
+
             const updatedThread = await this.threadModel.findOneAndUpdate({ _id: id }, updateThreadDto, { new: true });
+            
             return updatedThread;
         } catch (error) {
             throw new Error('Unable to update thread');
@@ -44,6 +57,8 @@ export class ThreadsService {
     }
 
     async upvote(id: string, username: string): Promise<Thread> {
+        const neo = this.neo4jService.beginTransaction();
+
         try {
             const thread = await this.threadModel.findOne({ _id: id });
 
@@ -72,13 +87,23 @@ export class ThreadsService {
             thread.upvotes.push(user._id);
             await thread.save();
 
+            await neo.run(
+                `MATCH (u:User { username: $username }), (t:Thread { id: $id }) MERGE (u)-[:UPVOTED]->(t)`,
+                { username: username, id: thread._id }
+            );
+
+            await neo.commit();
+
             return thread;
         } catch (error) {
+            await neo.rollback();
             throw new Error('Unable to upvote thread');
         }
     }
 
     async downvote(id: string, username: string): Promise<Thread> {
+        const neo = this.neo4jService.beginTransaction();
+
         try {
             const thread = await this.threadModel.findOne({ _id: id });
 
@@ -107,13 +132,23 @@ export class ThreadsService {
             thread.downvotes.push(user._id);
             await thread.save();
 
+            await neo.run(
+                `MATCH (u:User { username: $username }), (t:Thread { id: $id }) MERGE (u)-[:DOWNVOTED]->(t)`,
+                { username: username, id: thread._id }
+            );
+
+            await neo.commit();
+
             return thread;
         } catch (error) {
+            await neo.rollback();
             throw new Error('Unable to downvote thread');
         }
     }
 
-    async delete(id: string): Promise<Thread> {
+    async delete(id: string, username: string): Promise<Thread> {
+        const neo = this.neo4jService.beginTransaction();
+
         try {
             const thread = await this.threadModel.findOne({ _id: id });
 
@@ -121,9 +156,23 @@ export class ThreadsService {
                 throw new NotFoundException('Thread not found');
             }
 
+            if (thread.username !== username) {
+                throw new UnauthorizedException('User is not authorized to delete this thread');
+            }
+
             const deletedThread = await this.threadModel.findOneAndDelete({ _id: id });
+
+            await Promise.all([
+                neo.run(`MATCH (:User)-[r:UPVOTED]->(t:Thread { id: $id }) DELETE r`, { id: thread._id } ),
+                neo.run(`MATCH (:User)-[r:DOWNVOTED]->(t:Thread { id: $id }) DELETE r`, { id: thread._id } ),
+                neo.run(`MATCH (t:Thread { id: $id }) DETACH DELETE t`, { id: thread._id } )
+            ]);
+
+            await neo.commit();
+
             return deletedThread;
         } catch (error) {
+            await neo.rollback();
             throw new Error('Unable to delete thread');
         }
     }

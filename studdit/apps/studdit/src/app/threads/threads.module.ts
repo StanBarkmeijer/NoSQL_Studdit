@@ -4,7 +4,8 @@ import { Comment, CommentSchema } from '../comments/schemas/comment.schema';
 import { ThreadsController } from './threads.controller';
 import { ThreadsService } from './threads.service';
 import { Thread, ThreadSchema } from './schemas/threads.schema';
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
+import { IsActiveMiddleware } from '../middleware/is-active.middleware';
 
 @Module({
   imports: [
@@ -17,4 +18,10 @@ import { Module } from '@nestjs/common';
   controllers: [ThreadsController],
   providers: [ThreadsService]
 })
-export class ThreadsModule {}
+export class ThreadsModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(IsActiveMiddleware)
+      .forRoutes(ThreadsController)
+  }
+}
