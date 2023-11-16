@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Delete, Get, HttpException, HttpStatus, NotFoundException, Param, Patch, Post, ValidationPipe } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, HttpException, HttpStatus, NotFoundException, Param, Patch, Post, Req, ValidationPipe } from '@nestjs/common';
 import { ApiCreatedResponse, ApiNotFoundResponse, ApiOkResponse, ApiParam, ApiTags, ApiUnprocessableEntityResponse } from '@nestjs/swagger';
 import { CommentsService } from './comments.service';
 import { CreateCommentDto } from './dto/create-comment.dto';
@@ -50,9 +50,11 @@ export class CommentsController {
     @ApiOkResponse({ description: 'The comment has been successfully deleted.'})
     @ApiNotFoundResponse({ description: 'Comment not found'})
     @ApiUnprocessableEntityResponse({ description: 'Unable to delete comment'})
-    delete(@Param('id') id: string): Promise<Comment> {
+    delete(@Param('id') id: string, @Req() req: any): Promise<Comment> {
+        const username = req.headers['authorization'];
+
         return this.commentsService
-            .delete(id)
+            .delete(id, username)
             .then(comment => comment)
             .catch(error => {
                 if (error instanceof NotFoundException) {
