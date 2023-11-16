@@ -14,7 +14,7 @@ export class User {
     password: string;
 
     @Prop({ default: true })
-    isActive: boolean;
+    isActive?: boolean;
 };
 
 export const UserSchema = SchemaFactory.createForClass(User);

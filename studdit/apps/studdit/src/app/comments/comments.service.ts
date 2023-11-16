@@ -15,23 +15,12 @@ export class CommentsService {
         @InjectModel(Thread.name) private threadModel: Model<Thread>,
     ) {}
 
-    private async userIsActive(username: string) {
-        const user = await this.userModel.findOne({ username });
-        return user?.isActive ?? false;
-    } 
-
     async create(createCommentDto: CreateCommentDto): Promise<Comment> {
         try {
             const user = await this.userModel.findOne({ username: createCommentDto.username });
 
             if (!user) {
                 throw new NotFoundException('User not found');
-            }
-
-            const isActive = await this.userIsActive(createCommentDto.username);
-
-            if (!isActive) {
-                throw new UnauthorizedException('User is not active');
             }
 
             const thread = await this.threadModel.findOne({ _id: createCommentDto.threadId });
@@ -58,12 +47,6 @@ export class CommentsService {
                 throw new NotFoundException('User not found');
             }
 
-            const isActive = await this.userIsActive(createNestedCommentDto.username);
-
-            if (!isActive) {
-                throw new UnauthorizedException('User is not active');
-            }
-
             const parentComment = await this.commentModel.findOne({ _id: id });
 
             if (!parentComment) {
@@ -86,12 +69,6 @@ export class CommentsService {
 
             if (!comment) {
                 throw new NotFoundException('Comment not found');
-            }
-
-            const isActive = await this.userIsActive(username);
-
-            if (!isActive) {
-                throw new UnauthorizedException('User is not active');
             }
 
             if (comment.username !== username) {
@@ -117,12 +94,6 @@ export class CommentsService {
 
             if (!user) {
                 throw new NotFoundException('User not found');
-            }
-
-            const isActive = await this.userIsActive(username);
-
-            if (!isActive) {
-                throw new UnauthorizedException('User is not active');
             }
 
             const hasUpvoted = comment.upvotes.includes(user._id);
@@ -158,12 +129,6 @@ export class CommentsService {
 
             if (!user) {
                 throw new NotFoundException('User not found');
-            }
-
-            const isActive = await this.userIsActive(username);
-
-            if (!isActive) {
-                throw new UnauthorizedException('User is not active');
             }
 
             const hasUpvoted = comment.upvotes.includes(user._id);

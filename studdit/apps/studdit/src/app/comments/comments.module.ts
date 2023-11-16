@@ -10,9 +10,11 @@ import { MiddlewareModule } from '../middleware/middleware.module';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: 'Comment', schema: CommentSchema }]),
-    MongooseModule.forFeature([{ name: 'User', schema: UserSchema }]),
-    MongooseModule.forFeature([{ name: 'Thread', schema: ThreadSchema }]),
+    MongooseModule.forFeature([
+      { name: 'Comment', schema: CommentSchema },
+      { name: 'User', schema: UserSchema },
+      { name: 'Thread', schema: ThreadSchema }
+    ]),
     MiddlewareModule.forRoot()
   ],
   providers: [CommentsService],
