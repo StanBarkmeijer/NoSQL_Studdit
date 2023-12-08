@@ -5,6 +5,8 @@ export type ThreadDocument = HydratedDocument<Thread>;
 
 @Schema({ timestamps: true })
 export class Thread {
+    _id?: Types.ObjectId;
+
     @Prop({ required: true, index: true }) // Index for username
     username: string;
 

@@ -26,8 +26,8 @@ export class ThreadsService {
             const createdThread = await this.threadModel.create([createThreadDto], { session });
 
             await neo.run(
-                `CREATE (t:Thread { title: $title, content: $content }) RETURN t`,
-                { title: createThreadDto.title, id: createdThread[0]._id }
+                `CREATE (t:Thread { title: $title, content: $content, username: $username }) RETURN t`,
+                { title: createThreadDto.title, content: createThreadDto.content, username: createThreadDto.username }
             );
 
             await neo.commit();
