@@ -16,56 +16,75 @@ export class CommentsService {
     ) {}
 
     async create(createCommentDto: CreateCommentDto): Promise<Comment> {
+        const session = await this.commentModel.db.startSession();
+        session.startTransaction();
+
         try {
-            const user = await this.userModel.findOne({ username: createCommentDto.username });
+            const user = await this.userModel.findOne({ username: createCommentDto.username }).session(session);
 
             if (!user) {
                 throw new NotFoundException('User not found');
             }
 
-            const thread = await this.threadModel.findOne({ _id: createCommentDto.threadId });
+            const thread = await this.threadModel.findOne({ _id: createCommentDto.threadId }).session(session);
 
             if (!thread) {
                 throw new NotFoundException('Thread not found');
             }
 
-            const createdComment = await this.commentModel.create(createCommentDto);
-            thread.comments.push(createdComment._id);
-            await thread.save();
+            const createdComment = await this.commentModel.create([createCommentDto], { session });
+            thread.comments.push(createdComment[0]._id);
+            await thread.save({ session });
 
-            return createdComment;
+            await session.commitTransaction();
+
+            return createdComment[0];
         } catch (error) {
+            await session.abortTransaction();
             throw new Error('Unable to create comment');
+        } finally {
+            session.endSession();
         }
     }
 
     async createNestedComment(id: string, createNestedCommentDto: CreateNestedCommentDto): Promise<Comment> {
+        const session = await this.commentModel.db.startSession();
+        session.startTransaction();
+
         try {
-            const user = await this.userModel.findOne({ username: createNestedCommentDto.username });
+            const user = await this.userModel.findOne({ username: createNestedCommentDto.username }).session(session);
 
             if (!user) {
                 throw new NotFoundException('User not found');
             }
 
-            const parentComment = await this.commentModel.findOne({ _id: id });
+            const parentComment = await this.commentModel.findOne({ _id: id }).session(session);
 
             if (!parentComment) {
                 throw new NotFoundException('Parent comment not found');
             }
 
-            const createdComment = await this.commentModel.create(createNestedCommentDto);
-            parentComment.comments.push(createdComment._id);
-            await parentComment.save();
+            const createdComment = await this.commentModel.create([createNestedCommentDto], { session });
+            parentComment.comments.push(createdComment[0]._id);
+            await parentComment.save({ session });
 
-            return createdComment;
+            await session.commitTransaction();
+
+            return createdComment[0];
         } catch (error) {
+            await session.abortTransaction();
             throw new Error('Unable to create nested comment');
+        } finally {
+            session.endSession();
         }
     }
 
-    async delete (id: string, username: string): Promise<Comment> {
+    async delete(id: string, username: string): Promise<Comment> {
+        const session = await this.commentModel.db.startSession();
+        session.startTransaction();
+
         try {
-            const comment = await this.commentModel.findOne({ _id: id });
+            const comment = await this.commentModel.findOne({ _id: id }).session(session);
 
             if (!comment) {
                 throw new NotFoundException('Comment not found');
@@ -75,22 +94,31 @@ export class CommentsService {
                 throw new UnauthorizedException('User is not author of comment');
             }
 
-            const deletedComment = await this.commentModel.findByIdAndDelete(id);
+            const deletedComment = await this.commentModel.findByIdAndDelete(id, { session });
+
+            await session.commitTransaction();
+
             return deletedComment;
         } catch (error) {
+            await session.abortTransaction();
             throw new Error('Unable to delete comment');
+        } finally {
+            session.endSession();
         }
     }
 
     async upvoteComment(id: string, username: string): Promise<Comment> {
+        const session = await this.commentModel.db.startSession();
+        session.startTransaction();
+
         try {
-            const comment = await this.commentModel.findOne({ _id: id });
+            const comment = await this.commentModel.findOne({ _id: id }).session(session);
 
             if (!comment) {
                 throw new NotFoundException('Comment not found');
             }
 
-            const user: User = await this.userModel.findOne({ username: username });
+            const user: User = await this.userModel.findOne({ username: username }).session(session);
 
             if (!user) {
                 throw new NotFoundException('User not found');
@@ -109,23 +137,31 @@ export class CommentsService {
             }
 
             comment.upvotes.push(user._id);
-            await comment.save();
+            await comment.save({ session });
+
+            await session.commitTransaction();
 
             return comment;
         } catch (error) {
+            await session.abortTransaction();
             throw new Error('Unable to upvote comment');
+        } finally {
+            session.endSession();
         }
     }
 
     async downvoteComment(id: string, username: string): Promise<Comment> {
+        const session = await this.commentModel.db.startSession();
+        session.startTransaction();
+
         try {
-            const comment = await this.commentModel.findOne({ _id: id });
+            const comment = await this.commentModel.findOne({ _id: id }).session(session);
 
             if (!comment) {
                 throw new NotFoundException('Comment not found');
             }
 
-            const user: User = await this.userModel.findOne({ username: username });
+            const user: User = await this.userModel.findOne({ username: username }).session(session);
 
             if (!user) {
                 throw new NotFoundException('User not found');
@@ -144,11 +180,16 @@ export class CommentsService {
             }
 
             comment.downvotes.push(user._id);
-            await comment.save();
+            await comment.save({ session });
+
+            await session.commitTransaction();
 
             return comment;
         } catch (error) {
+            await session.abortTransaction();
             throw new Error('Unable to downvote comment');
+        } finally {
+            session.endSession();
         }
     }
 
