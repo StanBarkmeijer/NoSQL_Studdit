@@ -22,7 +22,7 @@ async function bootstrap() {
     .setTitle('Studdit')
     .setDescription('The Studdit API description. Built for the NoSQL course, provided by Avans Hogeschool.')
     .setVersion('1.0')
-    .addServer(`http://localhost:${process.env.PORT}`)
+    .addServer(`http://localhost:${process.env.PORT}/api`)
     .addServer(`https://studdit-api.herokuapp.com`)
     .addSecurity('username', {
       type: 'apiKey',

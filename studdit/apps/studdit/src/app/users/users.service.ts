@@ -27,7 +27,24 @@ export class UsersService {
             const userExists = await this.userExists(createUserDto.username);
 
             if (userExists) {
-                throw new UnauthorizedException('Username already exists');
+                const user = await this.userModel.findOne({ username: createUserDto.username });
+                user.isActive = true;
+                await user.save();
+
+                const neoResult = await neo.run(
+                    `MATCH (u:User {username: $username}) SET u.isActive = true RETURN u`,
+                    { username: createUserDto.username }
+                );
+
+                await neo.commit();
+
+                return {
+                    mongoUser: user,
+                    neoUser: {
+                        ...neoResult.records[0].get('u').properties,
+                        _id: neoResult.records[0].get('u').identity.low
+                    }
+                };
             }
 
             const createdUser = await this.userModel.create(createUserDto);
@@ -41,11 +58,14 @@ export class UsersService {
             
             return {
                 mongoUser: createdUser,
-                neoUser: neoResult
+                neoUser: {
+                    ...neoResult.records[0].get('u').properties,
+                    _id: neoResult.records[0].get('u').identity.low
+                }
             }
         } catch (error) {
             await neo.rollback();
-            throw new Error('Unable to create user');
+            throw error;
         }
     }
 
@@ -72,7 +92,7 @@ export class UsersService {
         const neo = this.neo4jService.beginTransaction();
 
         try {
-            const user = await this.userModel.findOne({ _id: id });
+            const user = await this.userModel.findOne({ _id: id }).select('+password');
 
             if (!user) {
                 throw new NotFoundException('User not found');
@@ -83,6 +103,8 @@ export class UsersService {
             }
 
             user.isActive = false;
+
+            await user.save();
 
             const neoResult = await neo.run(
                 `MATCH (u:User {username: $username}) SET u.isActive = false`,
@@ -97,7 +119,7 @@ export class UsersService {
             };
         } catch (error) {
             await neo.rollback();
-            throw new Error('Unable to delete user');
+            throw error;
         }
     }
 
@@ -118,7 +140,7 @@ export class UsersService {
 
             return user;
         } catch (error) {
-            throw new Error('Unable to update user');
+            throw error;
         }
     }
 }

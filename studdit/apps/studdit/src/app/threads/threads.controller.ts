@@ -1,5 +1,5 @@
 import { BadRequestException, Body, Controller, Delete, Get, HttpException, HttpStatus, NotFoundException, Param, Patch, Post, Put, Query, Req, ValidationPipe } from '@nestjs/common';
-import { ApiCreatedResponse, ApiNotFoundResponse, ApiOkResponse, ApiParam, ApiQuery, ApiTags, ApiUnprocessableEntityResponse } from '@nestjs/swagger';
+import { ApiCreatedResponse, ApiNotFoundResponse, ApiOkResponse, ApiParam, ApiQuery, ApiSecurity, ApiTags, ApiUnprocessableEntityResponse } from '@nestjs/swagger';
 import { ThreadsService } from './threads.service';
 import { CreateThreadDto } from './dto/create-thread.dto';
 import { Thread } from './schemas/threads.schema';
@@ -111,6 +111,7 @@ export class ThreadsController {
     };
 
     @Get()
+    @ApiSecurity('username')
     @ApiQuery({ name: 'sort', type: String, description: 'The sorting method: upvotes, score, comments.', required: false })
     @ApiOkResponse({ description: 'The threads have been successfully retrieved.'})
     findAll(@Query('sort') sort: string): Promise<Thread[]> {

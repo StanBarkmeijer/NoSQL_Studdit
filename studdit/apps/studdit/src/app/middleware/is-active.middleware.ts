@@ -19,22 +19,24 @@ export class IsActiveMiddleware implements NestMiddleware {
           .send({ message: 'No authorization header provided' });
       }
 
-      const user = await this.userModel.findOne(username);
+      const user = await this.userModel.findOne({ username: username });
 
       if (!user) {
         return res
           .status(404)
-          .send({ message: 'User not found' });
+          .send({ message: 'Authenticated user not found' });
       }
 
       if (!user.isActive) {
         return res
           .status(401)
-          .send({ message: 'User is not active' });
+          .send({ message: 'Authenticated user is not active' });
       }
 
       next();
     } catch (error) {
+      console.log(error);
+
       return res
         .status(500)
         .send({ message: 'Internal server error' });
