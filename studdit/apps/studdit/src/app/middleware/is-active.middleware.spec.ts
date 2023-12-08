@@ -51,7 +51,7 @@ describe('IsActiveMiddleware', () => {
       await middleware.use(req, res, next);
 
       expect(res.status).toHaveBeenCalledWith(404);
-      expect(res.send).toHaveBeenCalledWith({ message: 'User not found' });
+      expect(res.send).toHaveBeenCalledWith({ message: 'Authenticated user not found' });
     });
 
     it('should return 401 when user is not active', async () => {
@@ -64,7 +64,7 @@ describe('IsActiveMiddleware', () => {
       await middleware.use(req, res, next);
 
       expect(res.status).toHaveBeenCalledWith(401);
-      expect(res.send).toHaveBeenCalledWith({ message: 'User is not active' });
+      expect(res.send).toHaveBeenCalledWith({ message: 'Authenticated user is not active' });
     });
 
     it('should return 500 when an error occurs', async () => {

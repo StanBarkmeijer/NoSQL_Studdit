@@ -17,5 +17,5 @@ export class UpdateUserDto {
         description: "Activity status of the user",
         example: true
     })
-    readonly isActive: boolean;
+    readonly isActive?: boolean;
 }

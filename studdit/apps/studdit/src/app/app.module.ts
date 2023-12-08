@@ -17,12 +17,13 @@ import { MiddlewareModule } from './middleware/middleware.module';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: '.env'
+      // envFilePath: process.env.NODE_ENV === 'test' ? '.env.test' : '.env'
+      envFilePath: '.env.test'
     }),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
-        uri: `mongodb+srv://${configService.get('MONGO_USERNAME')}:${configService.get('MONGO_PASSWORD')}@${configService.get('MONGO_PATH')}/?retryWrites=true&w=majority`,
+        uri: `mongodb+srv://${configService.get('MONGO_USERNAME')}:${configService.get('MONGO_PASSWORD')}@${configService.get('MONGO_PATH')}/${configService.get('DATABASE')}?retryWrites=true&w=majority`,
       }),
       inject: [ConfigService]
     }),

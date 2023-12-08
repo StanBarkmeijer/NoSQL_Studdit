@@ -87,10 +87,13 @@ export class UsersService {
 
     async findOne(id: string): Promise<User> {
         try {
-            return this.userModel.findOne({ 
-                _id: id, 
-                isActive: true 
-            });
+            const user = await this.userModel.findOne({ _id: id, isActive: true });
+
+            if (!user) {
+                throw new NotFoundException('User not found');
+            }
+
+            return user;
         } catch (error) {
             throw new NotFoundException('User not found');
         }
@@ -143,11 +146,11 @@ export class UsersService {
         session.startTransaction();
 
         try {
-            const user = await this.userModel.findOne({ _id: id }).session(session);
+            const user = await this.userModel.findOne({ _id: id }).select('+password').session(session);
             
             if (!user) {
                 throw new NotFoundException('User not found');
-            }
+            }            
 
             if (updateUserDto.currentPassword !== user.password) {
                 throw new UnauthorizedException('Current password is incorrect');
