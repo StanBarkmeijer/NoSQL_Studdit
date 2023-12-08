@@ -22,6 +22,9 @@ export class UsersService {
 
     async create(createUserDto: CreateUserDto): Promise<{ mongoUser: User, neoUser: any }> {
         const neo = this.neo4jService.beginTransaction();
+        
+        const session = await this.userModel.db.startSession();
+        session.startTransaction();
 
         try {
             const userExists = await this.userExists(createUserDto.username);
@@ -29,7 +32,7 @@ export class UsersService {
             if (userExists) {
                 const user = await this.userModel.findOne({ username: createUserDto.username });
                 user.isActive = true;
-                await user.save();
+                await user.save({ session });
 
                 const neoResult = await neo.run(
                     `MATCH (u:User {username: $username}) SET u.isActive = true RETURN u`,
@@ -37,6 +40,7 @@ export class UsersService {
                 );
 
                 await neo.commit();
+                await session.commitTransaction();
 
                 return {
                     mongoUser: user,
@@ -47,7 +51,7 @@ export class UsersService {
                 };
             }
 
-            const createdUser = await this.userModel.create(createUserDto);
+            const createdUser = await this.userModel.create([createUserDto], { session });
 
             const neoResult = await neo.run(
                 `CREATE (u:User {username: $username, isActive: $isActive}) RETURN u`,
@@ -55,9 +59,10 @@ export class UsersService {
             );
 
             await neo.commit();
-            
+            await session.commitTransaction();
+
             return {
-                mongoUser: createdUser,
+                mongoUser: createdUser[0],
                 neoUser: {
                     ...neoResult.records[0].get('u').properties,
                     _id: neoResult.records[0].get('u').identity.low
@@ -65,7 +70,10 @@ export class UsersService {
             }
         } catch (error) {
             await neo.rollback();
+            await session.abortTransaction();
             throw error;
+        } finally {
+            session.endSession();
         }
     }
 
@@ -89,10 +97,12 @@ export class UsersService {
     }
 
     async delete(id: string, deleteUserDTO: DeleteUserDto): Promise<{ mongoUser: User, neoUser: any }> {
+        const session = await this.userModel.startSession();
+        session.startTransaction();
         const neo = this.neo4jService.beginTransaction();
 
         try {
-            const user = await this.userModel.findOne({ _id: id }).select('+password');
+            const user = await this.userModel.findOne({ _id: id }).select('+password').session(session);
 
             if (!user) {
                 throw new NotFoundException('User not found');
@@ -104,13 +114,14 @@ export class UsersService {
 
             user.isActive = false;
 
-            await user.save();
+            await user.save({ session });
 
             const neoResult = await neo.run(
                 `MATCH (u:User {username: $username}) SET u.isActive = false`,
                 { username: user.username }
             );
 
+            await session.commitTransaction();
             await neo.commit();
 
             return {
@@ -118,14 +129,21 @@ export class UsersService {
                 neoUser: neoResult
             };
         } catch (error) {
+            await session.abortTransaction();
             await neo.rollback();
+
             throw error;
+        } finally {
+            session.endSession();
         }
     }
 
     async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
+        const session = await this.userModel.startSession();
+        session.startTransaction();
+
         try {
-            const user = await this.userModel.findOne({ _id: id });
+            const user = await this.userModel.findOne({ _id: id }).session(session);
             
             if (!user) {
                 throw new NotFoundException('User not found');
@@ -136,11 +154,16 @@ export class UsersService {
             }
 
             user.password = updateUserDto.newPassword;
-            await user.save();
+            await user.save({ session });
+
+            await session.commitTransaction();
 
             return user;
         } catch (error) {
+            await session.abortTransaction();
             throw error;
+        } finally {
+            session.endSession();
         }
     }
 }
