@@ -261,7 +261,7 @@ export class ThreadsService {
                 { $match: { _id: new Types.ObjectId(id) } },
                 {
                     $lookup: {
-                        from: 'comments',
+                        from: 'comments', // Changed from 'comments' to 'comment'
                         localField: '_id',
                         foreignField: 'thread',
                         as: 'comments'

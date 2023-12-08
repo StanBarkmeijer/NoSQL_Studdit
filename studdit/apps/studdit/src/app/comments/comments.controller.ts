@@ -1,5 +1,5 @@
 import { BadRequestException, Body, Controller, Delete, Get, HttpException, HttpStatus, NotFoundException, Param, Patch, Post, Req, ValidationPipe } from '@nestjs/common';
-import { ApiCreatedResponse, ApiNotFoundResponse, ApiOkResponse, ApiParam, ApiTags, ApiUnprocessableEntityResponse } from '@nestjs/swagger';
+import { ApiCreatedResponse, ApiNotFoundResponse, ApiOkResponse, ApiParam, ApiSecurity, ApiTags, ApiUnprocessableEntityResponse } from '@nestjs/swagger';
 import { CommentsService } from './comments.service';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { Comment } from './schemas/comment.schema';
@@ -11,6 +11,7 @@ export class CommentsController {
     constructor(private readonly commentsService: CommentsService) {}
 
     @Post()
+    @ApiSecurity('username')
     @ApiCreatedResponse({ description: 'The comment has been successfully created.'})
     @ApiUnprocessableEntityResponse({ description: 'Unable to create comment.'})
     @ApiNotFoundResponse({ description: 'User or Thread not found'})
@@ -28,6 +29,7 @@ export class CommentsController {
     }
 
     @Post(':id')
+    @ApiSecurity('username')
     @ApiParam({ name: 'id', type: String, description: 'The id of the parent comment.' })
     @ApiCreatedResponse({ description: 'The nested comment has been successfully created.'})
     @ApiUnprocessableEntityResponse({ description: 'Unable to create nested comment.'})
@@ -46,6 +48,7 @@ export class CommentsController {
     }
 
     @Delete(':id')
+    @ApiSecurity('username')
     @ApiParam({ name: 'id', type: String, description: 'The id of the comment to delete.' })
     @ApiOkResponse({ description: 'The comment has been successfully deleted.'})
     @ApiNotFoundResponse({ description: 'Comment not found'})
@@ -123,6 +126,19 @@ export class CommentsController {
                     throw new HttpException('Thread not found', HttpStatus.NOT_FOUND);
                 }
 
+                throw new HttpException('Unable to get comments', HttpStatus.UNPROCESSABLE_ENTITY);
+            });
+    }
+
+    @Get()
+    @ApiSecurity('username')
+    @ApiOkResponse({ description: 'The comments have been successfully retrieved.'})
+    @ApiUnprocessableEntityResponse({ description: 'Unable to get comments'})
+    getComments(): Promise<Comment[]> {
+        return this.commentsService
+            .getComments()
+            .then(comments => comments)
+            .catch(error => {
                 throw new HttpException('Unable to get comments', HttpStatus.UNPROCESSABLE_ENTITY);
             });
     }

@@ -26,7 +26,7 @@ export class CommentsService {
                 throw new NotFoundException('User not found');
             }
 
-            const thread = await this.threadModel.findOne({ _id: createCommentDto.threadId }).session(session);
+            const thread = await this.threadModel.findOne({ _id: createCommentDto.thread }).session(session);
 
             if (!thread) {
                 throw new NotFoundException('Thread not found');
@@ -190,6 +190,15 @@ export class CommentsService {
             throw new Error('Unable to downvote comment');
         } finally {
             session.endSession();
+        }
+    }
+
+    async getComments(): Promise<Comment[]> {
+        try {
+            const comments = await this.commentModel.find();
+            return comments;
+        } catch (error) {
+            throw new Error('Unable to get comments');
         }
     }
 

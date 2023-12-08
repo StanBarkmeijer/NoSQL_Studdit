@@ -17,8 +17,7 @@ import { MiddlewareModule } from './middleware/middleware.module';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      // envFilePath: process.env.NODE_ENV === 'test' ? '.env.test' : '.env'
-      envFilePath: '.env.test'
+      envFilePath: process.env.NODE_ENV === 'test' ? '.env.test' : '.env'
     }),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],

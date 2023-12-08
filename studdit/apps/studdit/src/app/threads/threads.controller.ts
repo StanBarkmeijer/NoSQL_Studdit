@@ -10,6 +10,7 @@ export class ThreadsController {
     constructor(private readonly threadsService: ThreadsService) {}
 
     @Post()
+    @ApiSecurity('username')
     @ApiCreatedResponse({ description: 'The thread has been successfully created.'})
     @ApiUnprocessableEntityResponse({ description: 'Unable to create thread.'})
     @ApiNotFoundResponse({ description: 'User not found'})
@@ -27,6 +28,7 @@ export class ThreadsController {
     };
 
     @Put(':id')
+    @ApiSecurity('username')
     @ApiParam({ name: 'id', type: String, description: 'The id of the thread to update.' })
     @ApiOkResponse({ description: 'The thread has been successfully updated.'})
     @ApiNotFoundResponse({ description: 'Thread not found'})
@@ -45,12 +47,15 @@ export class ThreadsController {
     };
 
     @Patch(':id/upvote')
+    @ApiSecurity('username')
     @ApiParam({ name: 'id', type: String, description: 'The id of the thread to upvote.' })
     @ApiOkResponse({ description: 'The thread has been successfully upvoted.'})
     @ApiNotFoundResponse({ description: 'Thread not found'})
     @ApiNotFoundResponse({ description: 'User not found'})
     @ApiUnprocessableEntityResponse({ description: 'Unable to upvote thread'})
-    upvote(@Param('id') id: string, @Body('username') username: string): Promise<Thread> {
+    upvote(@Param('id') id: string, @Req() req: any): Promise<Thread> {
+        const username = req.headers['authorization'];
+
         return this.threadsService
             .upvote(id, username)
             .then(thread => thread)
@@ -60,7 +65,7 @@ export class ThreadsController {
                 }
 
                 if (error instanceof BadRequestException) {
-                    throw new HttpException('Bad request', HttpStatus.BAD_REQUEST);
+                    throw new HttpException('Already upvoted this thread', HttpStatus.BAD_REQUEST);
                 }
 
                 throw new HttpException('Unable to upvote thread', HttpStatus.UNPROCESSABLE_ENTITY);
@@ -68,12 +73,15 @@ export class ThreadsController {
     };
 
     @Patch(':id/downvote')
+    @ApiSecurity('username')
     @ApiParam({ name: 'id', type: String, description: 'The id of the thread to downvote.' })
     @ApiOkResponse({ description: 'The thread has been successfully downvoted.'})
     @ApiNotFoundResponse({ description: 'Thread not found'})
     @ApiNotFoundResponse({ description: 'User not found'})
     @ApiUnprocessableEntityResponse({ description: 'Unable to downvote thread'})
-    downvote(@Param('id') id: string, @Body('username') username: string): Promise<Thread> {
+    downvote(@Param('id') id: string, @Req() req: any): Promise<Thread> {
+        const username = req.headers['authorization'];
+        
         return this.threadsService
             .downvote(id, username)
             .then(thread => thread)
@@ -91,6 +99,7 @@ export class ThreadsController {
     };
 
     @Delete(':id')
+    @ApiSecurity('username')
     @ApiParam({ name: 'id', type: String, description: 'The id of the thread to delete.' })
     @ApiOkResponse({ description: 'The thread has been successfully deleted.'})
     @ApiNotFoundResponse({ description: 'Thread not found'})
@@ -136,6 +145,7 @@ export class ThreadsController {
     }
 
     @Get(':id')
+    @ApiSecurity('username')
     @ApiParam({ name: 'id', type: String, description: 'The id of the thread to retrieve.' })
     @ApiOkResponse({ description: 'The thread has been successfully retrieved.'})
     @ApiNotFoundResponse({ description: 'Thread not found'})

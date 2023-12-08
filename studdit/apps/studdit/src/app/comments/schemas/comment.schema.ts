@@ -11,6 +11,12 @@ export class Comment {
     @Prop({ required: true })
     content: string;
 
+    @Prop({ type: Types.ObjectId, ref: 'Comment', default: null })
+    parentComment: Types.ObjectId;
+
+    @Prop({ type: Types.ObjectId, ref: 'Thread', default: null })
+    thread: Types.ObjectId;
+
     // Similar consideration: Referencing related data (User and nested Comment)
     @Prop({ type: [{ type: Types.ObjectId, ref: 'Comment' }], default: [] })
     comments: Types.ObjectId[];

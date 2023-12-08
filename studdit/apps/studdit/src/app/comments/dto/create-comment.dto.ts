@@ -24,5 +24,5 @@ export class CreateCommentDto {
     })
     @IsNotEmpty()
     @IsString()
-    readonly threadId: string;
+    readonly thread: string;
 }
