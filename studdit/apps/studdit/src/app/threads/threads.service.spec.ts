@@ -89,7 +89,7 @@ describe('ThreadsService', () => {
 
   describe('upvote', () => {
     it('should return a thread', async () => {
-      let users = await userModel.find({})
+      const users = await userModel.find({})
 
       const res = await service.upvote(thread._id + "", users[0].username);
       expect(res).toBeInstanceOf(Object);
@@ -99,7 +99,7 @@ describe('ThreadsService', () => {
 
   describe('downvote', () => {
     it('should return a thread', async () => {
-      let users = await userModel.find({})
+      const users = await userModel.find({})
 
       const res = await service.downvote(thread._id + "", users[0].username);
       expect(res).toBeInstanceOf(Object);

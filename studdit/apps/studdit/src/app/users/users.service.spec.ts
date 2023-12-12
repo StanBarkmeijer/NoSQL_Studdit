@@ -20,7 +20,7 @@ describe('UsersService', () => {
 
     await userModel.deleteMany({});
 
-    let u = await userModel.create({
+    const u = await userModel.create({
       username: 'test',
       password: 'test',
       isActive: true
